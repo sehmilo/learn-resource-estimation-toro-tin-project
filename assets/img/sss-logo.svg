@@ -1,0 +1,8 @@
+<svg viewBox="0 0 110 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Shadrach Sehmilo Sheriff">
+  <rect width="110" height="130" rx="13" fill="#0a0e10"/>
+  <g fill="#3FE625">
+    <polygon points="22,22 86,22 64,54 22,54"/>
+    <polygon points="22,54 64,54 86,76 46,76"/>
+    <polygon points="46,76 86,76 86,108 22,108"/>
+  </g>
+</svg>
