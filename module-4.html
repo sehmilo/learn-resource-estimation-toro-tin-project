@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Module 4 &middot; Variography &mdash; Toro Resource Estimation Course</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},
+  svg:{fontCache:'global'}};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand">
+    <a href="index.html">
+      <div class="ttl">Resource Estimation &amp; Geostatistics</div>
+      <div class="sub">Toro Tin Project &middot; ANRML26-137</div>
+    </a>
+  </div>
+  <nav>
+    <div class="nav-label">Course</div>
+    <a href="index.html"><span class="mnum">&#9737;</span>Course home</a>
+    <div class="nav-label">Modules</div>
+    <a href="module-1.html"><span class="mnum">1</span>Foundations</a>
+    <a href="module-2.html"><span class="mnum">2</span>Sampling &amp; Data</a>
+    <a href="module-3.html"><span class="mnum">3</span>EDA &amp; Statistics</a>
+    <a href="module-4.html" class="active"><span class="mnum">4</span>Variography</a>
+    <a href="module-5.html"><span class="mnum">5</span>Grade Estimation</a>
+    <a href="module-6.html"><span class="mnum">6</span>Reporting &amp; Capstone</a>
+  </nav>
+  <div class="foot">A technical training course built on the live
+    ANRML26-137 / EL-046017 datasets.</div>
+</aside>
+<main class="main">
+<div class="content">
+
+<div class="eyebrow">Module 4</div>
+<h1>Spatial Continuity and Variography</h1>
+<div class="mod-meta">
+  <span>&#9201; 55&ndash;70 min</span>
+  <span>&#9776; 9 sections</span>
+  <span>&#9881; 1 interactive tool</span>
+  <span>&#10003; Prerequisite: Modules 1&ndash;3</span>
+</div>
+
+<p class="lead">This is the heart of geostatistics. Classical statistics
+treats samples as independent &mdash; but grade samples are not
+independent: two pits 50 m apart tell you more about each other than two
+pits 5 km apart. Variography is the mathematics that measures, models and
+exploits that spatial dependence. Every estimate in Module 5 is built on
+the variogram fitted here.</p>
+
+<div class="objectives">
+  <h4>Learning objectives</h4>
+  <ul>
+    <li>Explain the regionalised variable and why grade needs the random
+      function model.</li>
+    <li>State the second-order and intrinsic stationarity hypotheses and
+      know which one geostatistics relies on.</li>
+    <li>Define the covariance and the semivariogram and derive the
+      relationship between them.</li>
+    <li>Compute an experimental variogram with the Matheron estimator and
+      read its nugget, sill and range.</li>
+    <li>Fit a licit (positive-definite) variogram model and recognise
+      anisotropy.</li>
+    <li>Build and interpret the Toro SnO&#8322; variogram and judge what
+      it can support.</li>
+  </ul>
+</div>
+
+<h2>4.1 The regionalised variable</h2>
+<p>Grade is a number attached to a location. Write it
+\(z(\mathbf{x})\): the grade observed at position vector \(\mathbf{x}\).
+Georges Matheron called such a quantity a <b>regionalised variable</b>
+&mdash; a variable distributed in space that carries two characters at
+once.</p>
+
+<p>It has a <b>structured</b> character: grade reflects geology, and
+geology is continuous, so nearby values resemble one another. And it has
+a <b>random, erratic</b> character: grade fluctuates point to point in a
+way no deterministic equation can predict. A purely deterministic model
+cannot capture the erratic part; a purely random model throws away the
+structure. Geostatistics is the framework built to hold both at once.</p>
+
+<h2>4.2 The random function model</h2>
+<p>Here is the conceptual leap that makes everything else possible. We
+have exactly <em>one</em> grade value at each sampled point &mdash; one
+realisation of reality. To speak of probability, variance or confidence
+we must model that single reality as one outcome of a <b>random
+function</b>.</p>
+
+<div class="callout def">
+  <div class="ttl">The random function</div>
+  <p>At every location \(\mathbf{x}\), treat the grade
+  \(Z(\mathbf{x})\) as a <em>random variable</em>. The whole collection
+  \(\{Z(\mathbf{x}):\mathbf{x}\in\text{domain}\}\) is a <b>random
+  function</b> (or random field). The single map of grades we actually
+  measured is regarded as one <em>realisation</em> of this random
+  function &mdash; one draw from an imagined ensemble of all geologically
+  possible deposits consistent with the same processes.</p>
+</div>
+
+<p>This is a modelling fiction, and a deliberate one. It is the price of
+admission to a quantified uncertainty: only by imagining the ensemble can
+we define the variance of an estimation error, and therefore attach the
+confidence statement that Module 1 insisted upon. The fiction is made
+workable by one disciplined assumption &mdash; stationarity.</p>
+
+<h2>4.3 Stationarity: making one realisation usable</h2>
+<p>We have one realisation but need ensemble averages. Stationarity is
+the bridge: it lets us replace an average <em>over the imagined
+ensemble</em> with an average <em>over space in our single dataset</em>.
+Geostatistics uses two graded versions of the assumption.</p>
+
+<p><b>Second-order (weak) stationarity</b> makes two demands. The mean is
+constant everywhere:</p>
+
+<div class="eq">
+  <span class="eqnum">(4.1)</span>
+  \[ \mathbb{E}[Z(\mathbf{x})] \;=\; m \qquad\text{for all }\mathbf{x} \]
+</div>
+
+<p>and the covariance between two locations depends only on the
+separation vector \(\mathbf{h}\) between them, not on where they sit:</p>
+
+<div class="eq">
+  <span class="eqnum">(4.2)</span>
+  \[ \operatorname{Cov}\!\big[Z(\mathbf{x}),Z(\mathbf{x}+\mathbf{h})\big]
+     \;=\; C(\mathbf{h}) \]
+  <div class="eqlabel">C(h) is the covariance function. Setting h = 0
+  gives C(0) = Var[Z(x)], the variance of the random function.</div>
+</div>
+
+<p>Second-order stationarity requires a finite variance \(C(0)\). Some
+real geological variables behave as if their variance grows without
+limit as the domain expands, and for them no finite \(C(0)\) exists. So
+geostatistics leans on a weaker assumption.</p>
+
+<div class="callout key">
+  <div class="ttl">The intrinsic hypothesis</div>
+  <p>The <b>intrinsic hypothesis</b> requires stationarity only of the
+  <em>increments</em> \(Z(\mathbf{x}+\mathbf{h})-Z(\mathbf{x})\), not of
+  \(Z\) itself. It asks that the increment has zero expected value and a
+  variance that depends only on \(\mathbf{h}\):</p>
+  \[ \mathbb{E}\!\big[Z(\mathbf{x}+\mathbf{h})-Z(\mathbf{x})\big]=0,
+     \qquad
+     \operatorname{Var}\!\big[Z(\mathbf{x}+\mathbf{h})-Z(\mathbf{x})\big]
+     = 2\gamma(\mathbf{h}) \]
+  <p>This is weaker than second-order stationarity &mdash; every
+  second-order stationary function is intrinsic, but not the reverse
+  &mdash; and it is all that the variogram and ordinary kriging require.
+  It is the working assumption of practical geostatistics.</p>
+</div>
+
+<h2>4.4 The semivariogram and its link to covariance</h2>
+<p>The quantity \(\gamma(\mathbf{h})\) introduced above is the
+<b>semivariogram</b> &mdash; universally, if loosely, just called the
+<em>variogram</em>. It is the central tool of the discipline. By
+definition it is half the variance of the increment:</p>
+
+<div class="eq">
+  <span class="eqnum">(4.3)</span>
+  \[ \gamma(\mathbf{h}) \;=\;
+     \tfrac{1}{2}\operatorname{Var}\!\big[Z(\mathbf{x}+\mathbf{h})
+     -Z(\mathbf{x})\big] \]
+</div>
+
+<p>Because the expected increment is zero under the intrinsic hypothesis,
+the variance of the increment equals its mean square, giving the form we
+actually estimate:</p>
+
+<div class="eq">
+  <span class="eqnum">(4.4)</span>
+  \[ \gamma(\mathbf{h}) \;=\;
+     \tfrac{1}{2}\,\mathbb{E}\!\Big[\big(Z(\mathbf{x}+\mathbf{h})
+     -Z(\mathbf{x})\big)^2\Big] \]
+  <div class="eqlabel">The semivariogram is half the mean squared
+  difference between two values a vector h apart. Small gamma means
+  values stay alike across h; large gamma means they decorrelate.</div>
+</div>
+
+<p>When the stronger second-order stationarity <em>does</em> hold, the
+variogram and the covariance are two views of the same structure. The
+link is worth deriving in full, because it explains the shape of every
+variogram you will ever fit.</p>
+
+<div class="callout note">
+  <div class="ttl">Derivation: gamma(h) = C(0) &minus; C(h)</div>
+  <p>Expand the square in (4.4):</p>
+  \[ 2\gamma(\mathbf{h})=\mathbb{E}\big[Z(\mathbf{x}+\mathbf{h})^2\big]
+     +\mathbb{E}\big[Z(\mathbf{x})^2\big]
+     -2\,\mathbb{E}\big[Z(\mathbf{x}+\mathbf{h})Z(\mathbf{x})\big] \]
+  <p>For any random variable, \(\mathbb{E}[Z^2]=\operatorname{Var}(Z)
+  +(\mathbb{E}[Z])^2=C(0)+m^2\). And by the definition of covariance,
+  \(\mathbb{E}[Z(\mathbf{x}+\mathbf{h})Z(\mathbf{x})]
+  =C(\mathbf{h})+m^2\). Substituting all three terms:</p>
+  \[ 2\gamma(\mathbf{h})=\big(C(0)+m^2\big)+\big(C(0)+m^2\big)
+     -2\big(C(\mathbf{h})+m^2\big)=2C(0)-2C(\mathbf{h}) \]
+  <p>and therefore</p>
+  \[ \boxed{\;\gamma(\mathbf{h})\;=\;C(0)-C(\mathbf{h})\;} \]
+</div>
+
+<p>Read that boxed result. At \(\mathbf{h}=0\), \(C(\mathbf{h})=C(0)\) so
+\(\gamma=0\): a value is identical to itself. As \(\mathbf{h}\) grows,
+covariance \(C(\mathbf{h})\) decays towards zero, so \(\gamma(\mathbf{h})\)
+<em>rises</em> towards \(C(0)\), the variance. The variogram is, in
+effect, the covariance turned upside down. It rises where covariance
+falls. This is why a variogram climbs from zero and flattens at the
+variance &mdash; and why the two parameters of that climb, how high and
+how far, are the entire spatial model.</p>
+
+<h2>4.5 The experimental variogram</h2>
+<p>Equation (4.4) is a theoretical expectation. From data we compute its
+estimate &mdash; the <b>experimental variogram</b> &mdash; with the
+Matheron estimator. For a chosen lag (separation) \(\mathbf{h}\), gather
+every pair of samples separated by approximately that vector, and
+average their squared differences:</p>
+
+<div class="eq">
+  <span class="eqnum">(4.5)</span>
+  \[ \hat{\gamma}(\mathbf{h}) \;=\;
+     \frac{1}{2\,N(\mathbf{h})}\sum_{i=1}^{N(\mathbf{h})}
+     \big[z(\mathbf{x}_i)-z(\mathbf{x}_i+\mathbf{h})\big]^2 \]
+  <div class="eqlabel">N(h) is the number of sample pairs falling in the
+  lag bin. The estimate is only as trustworthy as N(h) is large.</div>
+</div>
+
+<p>Real samples are never separated by exactly \(\mathbf{h}\), so pairs
+are collected into <b>lag bins</b> defined by a lag spacing and a lag
+tolerance (commonly half the lag). Three practical rules govern a
+reliable experimental variogram:</p>
+
+<ul>
+  <li>Each lag should carry enough pairs &mdash; a widely used minimum is
+    about <b>30 pairs</b>; below roughly 20 the point is noise.</li>
+  <li>Interpret the variogram only out to about <b>half the field
+    extent</b>; beyond that, pair counts collapse and the few remaining
+    pairs sample only the edges of the deposit.</li>
+  <li>The lag spacing should be near the typical data spacing &mdash;
+    fine enough to resolve short-scale structure, coarse enough to keep
+    pairs in each bin.</li>
+</ul>
+
+<p>A useful companion plot is the <b>h-scatterplot</b>: a scatter of
+\(z(\mathbf{x})\) against \(z(\mathbf{x}+\mathbf{h})\) for every pair in
+a lag. At short lags the cloud hugs the 1:1 line (values alike); as the
+lag grows the cloud fattens into a shapeless blob (values
+decorrelated). The variogram is, quite literally, a summary of how fast
+that cloud disperses.</p>
+
+<figure>
+  <img src="assets/figures/fig_hscatter.png" alt="h-scatterplots">
+  <figcaption><b>Figure 4.1</b> &mdash; Toro h-scatterplots. At a 180 m
+  lag the pairs retain weak positive correlation; by 720 m the cloud has
+  dispersed and correlation is effectively gone. The variogram converts
+  this loss of correlation with distance into a single curve.</figcaption>
+</figure>
+
+<h2>4.6 Anatomy of the variogram: nugget, sill, range</h2>
+<p>A typical variogram rises from near the origin and flattens. Three
+parameters describe it, and each carries a direct geological meaning.</p>
+
+<div class="symkey">
+  <dt>Nugget</dt>
+  <dd>The apparent jump in \(\gamma\) at vanishingly small \(h\),
+  written \(C_0\). In theory \(\gamma(0)=0\); a positive intercept means
+  two samples taken almost at the same place still differ. It is the sum
+  of <b>micro-scale geological variability</b> below the sampling
+  resolution and the <b>sampling-plus-assay error</b> of Module 2. It is
+  pure unstructured noise.</dd>
+  <dt>Sill</dt>
+  <dd>The plateau the variogram reaches, \(C_0+C\). Under the boxed
+  result of section 4.4 the sill equals the variance \(C(0)\) of the
+  data. \(C\) alone is the <em>structured</em> part of the variance, the
+  part that geostatistics can exploit.</dd>
+  <dt>Range</dt>
+  <dd>The lag \(a\) at which the variogram reaches the sill. It is the
+  <b>distance of influence</b>: beyond the range, two samples are
+  statistically independent and one carries no information about the
+  other. The range sets the scale of the orebody's continuity.</dd>
+</div>
+
+<p>The most diagnostic single number is the <b>relative nugget effect</b>,
+the nugget as a fraction of the sill:</p>
+
+<div class="eq">
+  <span class="eqnum">(4.6)</span>
+  \[ \text{relative nugget} \;=\; \frac{C_0}{C_0+C} \]
+  <div class="eqlabel">Below ~0.25: well-structured, continuous grade.
+  0.25&ndash;0.5: moderate short-scale randomness. Above ~0.5: highly
+  erratic &mdash; half the variability is unstructured noise.</div>
+</div>
+
+<div class="callout note">
+  <div class="ttl">The pure nugget variogram</div>
+  <p>If a variogram is flat from the first lag &mdash; nugget equal to
+  sill, no rise &mdash; there is <em>no spatial structure at the sampled
+  scale</em>. Samples are effectively independent. Kriging then collapses
+  to the simple data mean, and the only honest conclusions are that the
+  sampling is too coarse to see the structure, or that the deposit
+  genuinely has none at this scale. The "Pure nugget" button in the tool
+  below shows exactly this degenerate case.</p>
+</div>
+
+<h2>4.7 Variogram models</h2>
+<p>The experimental variogram is known only at a handful of lags, and it
+is noisy. Kriging, in Module 5, needs \(\gamma(\mathbf{h})\) at
+<em>every</em> possible separation &mdash; and not just any function will
+do.</p>
+
+<div class="callout key">
+  <div class="ttl">Why you cannot use the experimental points directly</div>
+  <p>The kriging system inverts a matrix built from variogram values. For
+  that system to have a unique solution and to never return a negative
+  variance, the variogram function must be <b>conditionally negative
+  semi-definite</b> (equivalently, its covariance must be positive
+  definite). The raw experimental points have no such guarantee. So we
+  fit one of a small library of functions <em>known</em> to satisfy the
+  condition. These are the <b>licit (or authorised) variogram
+  models</b>.</p>
+</div>
+
+<p>Four bounded and one unbounded model cover almost all practice. In
+each, \(C_0\) is the nugget, \(C\) the structured sill contribution and
+\(a\) the range.</p>
+
+<h4>Spherical &mdash; the workhorse</h4>
+<div class="eq">
+  <span class="eqnum">(4.7)</span>
+  \[ \gamma(h)=\begin{cases}
+     C_0+C\!\left[\dfrac{3h}{2a}-\dfrac{1}{2}\!\left(\dfrac{h}{a}\right)^{\!3}
+     \right], & 0<h\le a\\[2mm]
+     C_0+C, & h>a \end{cases} \]
+</div>
+<p>The spherical model reaches its sill <em>exactly</em> at the range
+\(a\) and is close to linear near the origin. It suits most
+disseminated and placer-style mineralisation, and it is the model used
+for the Toro estimate.</p>
+
+<h4>Exponential</h4>
+<div class="eq">
+  <span class="eqnum">(4.8)</span>
+  \[ \gamma(h)=C_0+C\left[1-\exp\!\left(-\dfrac{3h}{a}\right)\right] \]
+</div>
+<p>Rises faster at first, then approaches the sill <em>asymptotically</em>
+&mdash; it never quite reaches it, so \(a\) is the <em>practical</em>
+range, where 95% of the sill is attained. It suits more erratic
+mineralisation.</p>
+
+<h4>Gaussian</h4>
+<div class="eq">
+  <span class="eqnum">(4.9)</span>
+  \[ \gamma(h)=C_0+C\left[1-\exp\!\left(-\dfrac{3h^{2}}{a^{2}}\right)\right] \]
+</div>
+<p>Parabolic at the origin &mdash; flat then rising &mdash; which
+describes an extremely continuous, smoothly varying property such as a
+seam thickness or a weathering-surface elevation. Used with care: a
+Gaussian with no nugget can make the kriging matrix numerically
+unstable.</p>
+
+<h4>Power &mdash; the unbounded model</h4>
+<div class="eq">
+  <span class="eqnum">(4.10)</span>
+  \[ \gamma(h)=C_0+p\,h^{\,\omega},\qquad 0<\omega<2 \]
+</div>
+<p>The power model has no sill and no range. It describes a variable that
+keeps decorrelating without limit &mdash; an intrinsic-only,
+non-second-order-stationary process. With \(\omega=1\) it is the linear
+model.</p>
+
+<div class="callout note">
+  <div class="ttl">Nested structures</div>
+  <p>A sum of licit models is itself licit. Real deposits often need a
+  <b>nested</b> variogram &mdash; a nugget plus a short-range structure
+  (local mineralisation) plus a long-range structure (the regional
+  geological trend). Each component is geologically interpretable, and
+  the sum is still a valid model for kriging.</p>
+</div>
+
+<h2>4.8 Anisotropy: continuity has direction</h2>
+<p>Grade continuity is rarely the same in every direction. A placer is
+more continuous <em>along</em> its palaeochannel than across it; a vein
+system is more continuous along strike than across it. The variogram is
+therefore computed <b>directionally</b> &mdash; pairs are binned not only
+by distance but by the azimuth of the vector joining them, within an
+angular tolerance.</p>
+
+<p>When directional variograms share a sill but differ in range, the
+structure has <b>geometric anisotropy</b>, fully described by an
+<em>anisotropy ellipse</em>: a major axis along the direction of greatest
+continuity (longest range) and a minor axis across it. When the sill
+itself changes with direction, the structure has <b>zonal
+anisotropy</b>. The full picture is captured by a <b>variogram map</b>
+&mdash; \(\hat\gamma\) computed over a 2D grid of lag vectors &mdash;
+whose elliptical contours reveal both the strength and the orientation of
+the anisotropy at a glance.</p>
+
+<figure>
+  <img src="assets/figures/fig_variogram_directional.png" alt="Directional variograms">
+  <figcaption><b>Figure 4.2</b> &mdash; Toro directional variograms,
+  north-south against east-west. With only 26 pits split between two
+  direction cones the curves are noisy and no anisotropy can be resolved
+  with confidence. The honest decision is an <em>isotropic</em> model
+  now, revisited when drilling adds the data density to test direction
+  properly.</figcaption>
+</figure>
+
+<h2>4.9 The Toro variogram, built and fitted</h2>
+<p>Now the theory meets the data. The variogram is computed on the 26
+composited Toro pit grades &mdash; composited, per Module 3, so that no
+location contributes a false zero-distance pair. A lag of 180 m was
+chosen to match the typical Bishiwai pit spacing.</p>
+
+<figure>
+  <img src="assets/figures/fig_variogram_omni.png" alt="Toro omnidirectional variogram">
+  <figcaption><b>Figure 4.3</b> &mdash; The Toro SnO&#8322; omnidirectional
+  experimental variogram. The number beside each point is its pair count
+  N(h). The first six lags carry 24&ndash;42 pairs and are reliable; the
+  last three carry only 5&ndash;12 pairs and are noise &mdash; note how
+  the 1260 m point leaps to 8.8 on just 8 pairs. The bronze curve is the
+  fitted spherical model.</figcaption>
+</figure>
+
+<p>The fit follows three defensible decisions, each one a direct
+application of section 4.5:</p>
+
+<ul>
+  <li><b>Only the reliable lags drive the fit.</b> The six lags with at
+    least 20 pairs are used to fit the model; the three sparse outer lags
+    are plotted but excluded. A model dragged upward by an 8-pair point
+    would be a model of noise.</li>
+  <li><b>The sill is fixed to the sample variance.</b> Under the
+    intrinsic hypothesis the sill of a bounded variogram equals the
+    variance of the data (the boxed result of section 4.4). Fixing it
+    removes one free parameter and stabilises a fit made from sparse,
+    noisy data.</li>
+  <li><b>An isotropic spherical model is adopted.</b> Section 4.8 showed
+    the directional data cannot resolve anisotropy, so isotropy is the
+    honest choice.</li>
+</ul>
+
+<div class="callout toro">
+  <div class="ttl">The fitted Toro model</div>
+  <p>Least-squares fitting of a spherical model to the reliable lags,
+  weighted by pair count, yields:</p>
+  <div class="tablewrap" style="margin-top:10px">
+  <table class="data">
+    <tr><th>Parameter</th><th>Value</th><th>Interpretation</th></tr>
+    <tr><td>Nugget C&#8320;</td><td class="num">1.88</td>
+      <td>unstructured noise &mdash; sampling error plus micro-variability</td></tr>
+    <tr><td>Sill C&#8320;+C</td><td class="num">3.44</td>
+      <td>total variance of the composited grades</td></tr>
+    <tr><td>Range a</td><td class="num">1052 m</td>
+      <td>distance of grade influence</td></tr>
+    <tr><td>Relative nugget</td><td class="num">0.55</td>
+      <td>more than half the variance is unstructured</td></tr>
+  </table>
+  </div>
+  <p>The verdict is sobering and must be stated plainly. A relative
+  nugget of 0.55 means <em>over half</em> of the grade variance has no
+  spatial structure the data can resolve. Some of that is the genuine
+  erratic nature of a coarse cassiterite placer; much of it, per
+  Module 2, is the fundamental sampling error of panned-concentrate
+  sampling. The structured range of about 1 km is encouraging &mdash; it
+  suggests real drainage-scale continuity &mdash; but a high-nugget
+  variogram is a quantitative warning: this data will estimate weakly,
+  and the resource it supports cannot rise above an Exploration Target.
+  Lowering that nugget is a sampling problem (Module 2), not an
+  estimation problem.</p>
+</div>
+
+<div class="codeblock"><div class="code-head"><span class="lang">Python</span>
+  <span>the experimental variogram, hand-coded</span></div>
+<pre><code class="language-python">import numpy as np
+
+def experimental_variogram(x, y, z, lag, nlags, tol=None):
+    """Matheron estimator - equation (4.5)."""
+    if tol is None:
+        tol = lag / 2.0
+    n = len(z)
+    dx = x[:, None] - x[None, :]          # all pairwise separations
+    dy = y[:, None] - y[None, :]
+    h  = np.sqrt(dx**2 + dy**2)
+    diff2 = (z[:, None] - z[None, :])**2  # all squared differences
+    iu = np.triu_indices(n, k=1)          # each unordered pair once
+    h, diff2 = h[iu], diff2[iu]
+    out = []
+    for k in range(1, nlags + 1):
+        centre = k * lag
+        m = np.abs(h - centre) <= tol     # pairs in this lag bin
+        if m.sum() >= 2:
+            out.append((centre, 0.5 * diff2[m].mean(), int(m.sum())))
+    return out
+
+def spherical(h, nugget, sill, rng):
+    """Licit spherical model - equation (4.7)."""
+    h = np.asarray(h, float)
+    g = np.where(h <= rng,
+                 nugget + (sill - nugget) * (1.5*h/rng - 0.5*(h/rng)**3),
+                 sill)
+    return np.where(h == 0, 0.0, g)
+</code></pre></div>
+
+<div class="widget" id="vario-widget"></div>
+
+<p>Use the tool above to feel what the parameters do. Drag the range and
+watch where the model meets the sill. Drag the nugget and watch the model
+lift off the origin. Press "Snap to least-squares fit" to land on the
+Toro model &mdash; then press "Pure nugget" to see the degenerate case
+where structure vanishes entirely and the variogram becomes a flat line.
+The weighted RMSE in the readout is exactly the quantity the Python
+<code>curve_fit</code> minimises.</p>
+
+<div class="quiz">
+  <div class="q">Check your understanding: A Toro-style variogram has a
+  nugget of 1.9 and a sill of 3.4. What does this most directly tell
+  you?</div>
+  <div class="opt" data-correct="0">The deposit has a grade range of
+  about 1 km.</div>
+  <div class="opt" data-correct="1">More than half the grade variance is
+  unstructured noise, so estimation will be weak and improving the
+  sampling protocol is the priority.</div>
+  <div class="opt" data-correct="0">The data are second-order stationary
+  and ready for kriging at Measured confidence.</div>
+  <div class="opt" data-correct="0">The variogram model is invalid and
+  must be refitted.</div>
+  <div class="explain">The relative nugget is 1.9 / 3.4 = 0.55. By the
+  reading rule of equation (4.6), more than half of the variance has no
+  spatial structure the data can see. That is a quantitative warning of
+  weak estimation ahead, and it points the fix at sampling quality
+  (Module 2), since the fundamental sampling error of panned-concentrate
+  sampling is a large contributor to that nugget. The range is a
+  separate parameter, and a high nugget does not make the model invalid
+  &mdash; only weak.</div>
+</div>
+
+<div class="pagenav">
+  <a href="module-3.html"><div class="dir">&larr; Previous</div>
+    <div class="ttl">Module 3 &middot; EDA &amp; Statistics</div></a>
+  <a class="next" href="module-5.html"><div class="dir">Next &rarr;</div>
+    <div class="ttl">Module 5 &middot; Grade Estimation</div></a>
+</div>
+
+</div>
+</main>
+</div>
+<script src="assets/course.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

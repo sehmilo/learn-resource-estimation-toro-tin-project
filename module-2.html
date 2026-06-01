@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Module 2 &middot; Sampling &amp; Data Integrity &mdash; Toro Resource Estimation Course</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},
+  svg:{fontCache:'global'}};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand">
+    <a href="index.html">
+      <div class="ttl">Resource Estimation &amp; Geostatistics</div>
+      <div class="sub">Toro Tin Project &middot; ANRML26-137</div>
+    </a>
+  </div>
+  <nav>
+    <div class="nav-label">Course</div>
+    <a href="index.html"><span class="mnum">&#9737;</span>Course home</a>
+    <div class="nav-label">Modules</div>
+    <a href="module-1.html"><span class="mnum">1</span>Foundations</a>
+    <a href="module-2.html" class="active"><span class="mnum">2</span>Sampling &amp; Data</a>
+    <a href="module-3.html"><span class="mnum">3</span>EDA &amp; Statistics</a>
+    <a href="module-4.html"><span class="mnum">4</span>Variography</a>
+    <a href="module-5.html"><span class="mnum">5</span>Grade Estimation</a>
+    <a href="module-6.html"><span class="mnum">6</span>Reporting &amp; Capstone</a>
+  </nav>
+  <div class="foot">A technical training course built on the live
+    ANRML26-137 / EL-046017 datasets.</div>
+</aside>
+<main class="main">
+<div class="content">
+
+<div class="eyebrow">Module 2</div>
+<h1>Sampling, Data and Database Integrity</h1>
+<div class="mod-meta">
+  <span>&#9201; 45&ndash;55 min</span>
+  <span>&#9776; 7 sections</span>
+  <span>&#9881; Python worked example</span>
+  <span>&#10003; Prerequisite: Module 1</span>
+</div>
+
+<p class="lead">An estimate can never be better than the samples it is
+built from. This module is about the part of the value chain that
+quietly determines the accuracy of everything downstream &mdash; and it
+is the part most often done carelessly. We derive the theory of sampling
+error, then apply it to the real integrity problems sitting inside the
+Toro database right now.</p>
+
+<div class="objectives">
+  <h4>Learning objectives</h4>
+  <ul>
+    <li>Quantify the fundamental sampling error using Gy's theory and
+      explain why particle size dominates it.</li>
+    <li>Design appropriate sampling for an alluvial placer and for a
+      primary hard-rock target, and explain why they differ.</li>
+    <li>Structure a drillhole / pit database into its four core tables
+      and explain why the structure matters.</li>
+    <li>Determine bulk density correctly and quantify its direct effect
+      on declared tonnage.</li>
+    <li>Build a QAQC system from standards, blanks and duplicates, and
+      read precision and accuracy from it.</li>
+    <li>Audit the Toro dataset: identify what each record truly
+      represents and composite it correctly.</li>
+  </ul>
+</div>
+
+<h2>2.1 The error budget: where accuracy is won and lost</h2>
+<p>Consider the scale of the extrapolation. A Toro pit bulk sample is
+roughly 100&ndash;200 kg. A future Toro mining operation might process
+several million tonnes. The sample-to-orebody mass ratio is of the order
+of one part in ten million or worse. Every tonne mined will have its
+grade <em>predicted</em> from that vanishingly small sampled fraction.</p>
+
+<p>It is useful to think of the total error in a final block estimate as
+a sum of variances from independent stages:</p>
+
+<div class="eq">
+  <span class="eqnum">(2.1)</span>
+  \[ \sigma^2_{\text{total}} \;=\; \sigma^2_{\text{sampling}}
+     \;+\; \sigma^2_{\text{sub-sampling}} \;+\; \sigma^2_{\text{assay}}
+     \;+\; \sigma^2_{\text{estimation}} \]
+  <div class="eqlabel">Variances add when the error sources are
+  independent. Estimation &mdash; kriging &mdash; is only the last term.
+  The first three are fixed before any geostatistics begins.</div>
+</div>
+
+<div class="callout key">
+  <div class="ttl">The order that matters</div>
+  <p>Modules 4 and 5 reduce only \(\sigma^2_{\text{estimation}}\). If the
+  sampling and assay variances are large, no kriging plan can rescue the
+  estimate &mdash; you would be interpolating noise with great
+  precision. Sampling quality is logically and chronologically prior to
+  geostatistics. This is why a resource course must spend a full module
+  here before touching a variogram.</p>
+</div>
+
+<h2>2.2 Gy's theory of sampling</h2>
+<p>Pierre Gy gave the mining industry a quantitative theory of sampling
+error. Its centrepiece is the <b>Fundamental Sampling Error</b> (FSE):
+the irreducible error that remains even with a perfectly executed
+sampling protocol, arising purely because ore is made of discrete,
+heterogeneous particles.</p>
+
+<p>Gy distinguished two kinds of heterogeneity. <b>Constitution
+heterogeneity</b> is intrinsic: particles differ from one another in
+composition, and no amount of mixing removes it. <b>Distribution
+heterogeneity</b> is the way those particles are arranged in space, and
+it <em>can</em> be reduced by homogenisation. The FSE flows from
+constitution heterogeneity, which is why it is fundamental and
+irreducible for a given material and particle size.</p>
+
+<p>For a low-grade ore sampled correctly, the variance of the FSE is:</p>
+
+<div class="eq">
+  <span class="eqnum">(2.2)</span>
+  \[ \sigma^2_{\text{FSE}} \;=\;
+     \left(\frac{1}{M_S}-\frac{1}{M_L}\right) f\,g\,c\,\ell\,d^{\,3} \]
+  <div class="eqlabel">Gy's fundamental sampling error equation.</div>
+</div>
+
+<div class="symkey">
+  <dt>M&#8347;</dt><dd>mass of the sample taken (g)</dd>
+  <dt>M&#8343;</dt><dd>mass of the lot being sampled (g); when
+    M&#8347; &laquo; M&#8343; the second term vanishes</dd>
+  <dt>d</dt><dd>nominal top particle size, the 95% passing diameter (cm)
+    &mdash; note the <b>cube</b></dd>
+  <dt>f</dt><dd>shape factor, &asymp; 0.5 for typical equant grains</dd>
+  <dt>g</dt><dd>granulometric (size-range) factor, &asymp; 0.25 for
+    unsorted material</dd>
+  <dt>c</dt><dd>mineralogical / composition factor (g/cm&sup3;)</dd>
+  <dt>&#8467;</dt><dd>liberation factor, 0 (locked) to 1 (fully
+    liberated)</dd>
+</div>
+
+<p>The composition factor carries the grade dependence and, for an ore
+where the mineral of interest is dilute, simplifies to a revealing
+form:</p>
+
+<div class="eq">
+  <span class="eqnum">(2.3)</span>
+  \[ c \;=\; \frac{1-a_L}{a_L}\big[(1-a_L)\rho_M + a_L\rho_g\big]
+     \;\;\xrightarrow[a_L\to 0]{}\;\; \frac{\rho_M}{a_L} \]
+  <div class="eqlabel">a&#8343; is the fractional grade of the mineral of
+  interest; &rho;&#8344; and &rho;&#8348; are the densities of that
+  mineral and of the gangue. At low grade, c is inversely proportional
+  to grade.</div>
+</div>
+
+<p>Two consequences of equations (2.2) and (2.3) should permanently shape
+how you sample.</p>
+
+<p><b>Particle size dominates, because of the cube.</b> The FSE variance
+scales with \(d^3\). Halving the top particle size by crushing cuts the
+sampling variance to one eighth. This is the entire reason a sampling
+protocol is a staged sequence of <em>crush, split, crush, split</em>:
+you cannot take a small sample of coarse material without large error,
+so you reduce \(d\) before you reduce mass.</p>
+
+<p><b>Low grade plus a dense, coarse mineral is the worst case.</b> Since
+\(c \propto 1/a_L\), error explodes as grade falls. Cassiterite makes
+this acute: it is dense (\(\rho \approx 6.9\) g/cm&sup3;), often coarse,
+and frequently liberates as discrete grains. A coarse cassiterite ore
+behaves much like a coarse-gold ore &mdash; a few heavy grains carry a
+disproportionate share of the metal, so whether the sample happens to
+catch them swings the assay violently.</p>
+
+<div class="callout note">
+  <div class="ttl">Gy's theory and the nugget effect</div>
+  <p>Hold this thought for Module 4. The FSE is a variance that exists
+  even between two samples taken at the <em>same</em> place. When you
+  plot spatial continuity as a variogram, that same-location variance
+  appears as the intercept at zero distance: the <b>nugget effect</b>.
+  A large part of a tin deposit's nugget is not geology &mdash; it is
+  Gy's fundamental sampling error, plus assay error. Improving the
+  sampling protocol literally lowers the nugget you will fight in
+  Module 4.</p>
+</div>
+
+<p>Beyond the FSE, Gy catalogued further error terms that, unlike the
+FSE, are <em>avoidable</em> by correct practice. The <b>grouping and
+segregation error</b> arises because particles segregate by density and
+size (heavy cassiterite settles), so a sample scooped from one spot is
+biased; it is controlled by taking many small increments rather than one
+large grab. The <b>materialisation errors</b> &mdash; delimitation,
+extraction and preparation &mdash; are the practical mistakes of
+defining the wrong sample shape, failing to recover it cleanly, and
+contaminating or losing material during preparation. These produce
+<em>bias</em>, which is far more dangerous than random error because no
+amount of repeat sampling reveals it.</p>
+
+<h2>2.3 Sampling the two Toro orebodies</h2>
+<p>The two Toro targets are sampled by fundamentally different methods,
+because they are fundamentally different estimation problems. Get this
+distinction wrong and every later module is built on sand.</p>
+
+<h3>The alluvial target: a volume-grade problem</h3>
+<p>Alluvial cassiterite sits in wash gravels beneath barren overburden.
+The economic quantity is not a percentage &mdash; it is a
+<em>concentration of heavy mineral per unit volume of ground</em>,
+because that is what a dredge or wash plant processes. The grade unit is
+therefore <b>grams of tin (or kilograms of heavy mineral concentrate)
+per cubic metre</b>.</p>
+
+<p>Your field logs describe the correct method exactly. A pit is dug
+through overburden to the wash layer (in the Mining Pit, "the layer that
+host the material starts from 5.6 m down ... pit is exactly 8.6 m");
+a measured bulk sample of wash gravel is taken (200 kg); it is washed and
+panned to a heavy-mineral concentrate (HMC); the HMC is weighed (1&ndash;2
+kg recovered); and the HMC is assayed. The in-situ grade is then a
+<em>chain</em> of factors:</p>
+
+<div class="eq">
+  <span class="eqnum">(2.4)</span>
+  \[ g_{\,\mathrm{Sn}}\;\left[\tfrac{\text{g}}{\text{m}^3}\right]
+     \;=\;\underbrace{\frac{M_{\text{HMC}}}{M_{\text{bulk}}}}_{\text{yield}}
+     \;\times\;\underbrace{a_{\text{Sn}}}_{\substack{\text{Sn grade}\\
+     \text{of HMC}}}\;\times\;
+     \underbrace{\rho_{\text{gravel}}}_{\substack{\text{in-situ}\\
+     \text{density}}}\;\times\;10^{6} \]
+  <div class="eqlabel">The alluvial grade chain. Each factor is measured
+  separately, each carries its own error, and the errors multiply.</div>
+</div>
+
+<p>This single equation explains why an alluvial estimate is so
+treacherous. The XRF assay only delivers the middle factor,
+\(a_{\text{Sn}}\) &mdash; the tin grade <em>of the concentrate</em>. The
+yield comes from honest weighing in the field. The density comes from a
+separate in-situ measurement. A 10% error in any factor is a 10% error
+in the answer, and they compound.</p>
+
+<div class="callout pitfall">
+  <div class="ttl">The most important sentence in this module</div>
+  <p>The Toro XRF dataset reports the grade <em>of the panned heavy-mineral
+  concentrate</em>, not the grade of the ground. A sample reading "3.97%
+  SnO&#8322;" describes a kilogram of concentrate, not a cubic metre of
+  gravel. To turn it into a resource grade you must multiply by the HMC
+  yield and the bulk density, as in equation (2.4). Treating concentrate
+  assays as in-situ grades would overstate the deposit by one to two
+  orders of magnitude. This is the classic, fatal error in alluvial tin
+  reporting.</p>
+</div>
+
+<p>The chemical evidence confirms what the samples are. Raw alluvium is
+quartz-rich and would assay 70&ndash;90% SiO&#8322;. The Toro field
+samples average roughly 32% SiO&#8322; and 29% Fe&#8322;O&#8323; &mdash;
+these are heavy-mineral concentrates, the product of panning, exactly as
+the field logs describe.</p>
+
+<h3>The primary target: a grade-tonnage problem</h3>
+<p>The primary greisen and pegmatite target is sampled like any
+hard-rock deposit. The grade unit is <b>% Sn</b> (or g/t) of rock in
+place. The methods:</p>
+
+<div class="tablewrap">
+<table class="data">
+  <tr><th>Method</th><th>What it gives</th><th>Use at Toro</th></tr>
+  <tr><td>Diamond core drilling</td><td>Intact core: grade, true width,
+    structure, density, geotechnical data</td><td>Definitive primary
+    resource drilling on the LV 029 cupola</td></tr>
+  <tr><td>Reverse-circulation (RC) drilling</td><td>Rock chips: fast,
+    cheap grade, no structure</td><td>Grade infill once geometry is
+    known</td></tr>
+  <tr><td>Channel / chip sampling</td><td>Continuous chip across an
+    exposed width</td><td>Greisen veins and pegmatites in pits and
+    outcrop</td></tr>
+  <tr><td>Pitting / trenching</td><td>Near-surface 3D control</td>
+    <td>Eluvial cover and weathered cupola</td></tr>
+</table>
+</div>
+
+<p>Two cautions specific to the primary target. First, <b>true width</b>:
+a grade applies to a true thickness measured perpendicular to the
+mineralised structure, not to the down-hole interval. Drilling oblique
+to a vein inflates the apparent width and must be corrected by the
+intersection geometry. Second, <b>refractory tin chemistry</b>:
+cassiterite resists aqua-regia digestion, so an under-spec assay simply
+fails to dissolve the tin and reports a low grade. Toro analyses must
+specify four-acid digestion or, better, lithium-borate fusion XRF
+&mdash; which is exactly what the ANRML26-137 laboratory used (method
+XRF17, lithium borate fusion). That choice was correct.</p>
+
+<h2>2.4 The drillhole and pit database</h2>
+<p>Estimation software does not consume field notebooks. It consumes a
+<em>relational database</em> with a strict structure. Whether the data
+come from drillholes or pits, four core tables carry it, linked by a
+unique hole or pit identifier.</p>
+
+<div class="tablewrap">
+<table class="data">
+  <tr><th>Table</th><th>Key fields</th><th>Purpose</th></tr>
+  <tr><td>Collar</td><td>HoleID, Easting, Northing, RL, total depth</td>
+    <td>Where each hole or pit starts</td></tr>
+  <tr><td>Survey</td><td>HoleID, depth, azimuth, dip</td>
+    <td>The path of the hole in 3D (trivial for vertical pits)</td></tr>
+  <tr><td>Assay</td><td>HoleID, from, to, Sn, Nb, Ta ...</td>
+    <td>Grade over each sampled interval</td></tr>
+  <tr><td>Lithology / geology</td><td>HoleID, from, to, rock code,
+    weathering, alteration</td><td>The geological log that defines
+    domains</td></tr>
+</table>
+</div>
+
+<p>The non-negotiable rules: every interval is defined by a
+<code>from</code> and a <code>to</code> depth; intervals never overlap
+and never leave gaps; every <code>HoleID</code> in the assay table must
+exist in the collar table; coordinates use one declared system (for Toro,
+WGS84 UTM Zone 32N, as your roadmap specifies). The desurvey step
+combines collar and survey to compute the true 3D coordinate of every
+assay interval &mdash; the point that later carries a grade into the
+variogram and the kriging system.</p>
+
+<div class="callout toro">
+  <div class="ttl">Toro's priority drilling collars</div>
+  <p>Your <code>Priority Drilling Points</code> file is already a
+  well-formed collar table in embryo: 13 collars (DBD, DKD, DKK series)
+  with Easting, Northing, longitude and latitude at Bishiwai, Yadabongo
+  and Kadade. To become a resource database it now needs survey, assay
+  and lithology tables populated against those same HoleIDs &mdash; and
+  a defensible QAQC stream running through the assays.</p>
+</div>
+
+<h2>2.5 Bulk density &mdash; the silent half of every tonne</h2>
+<p>Tonnage is volume multiplied by density. Geologists lavish attention
+on grade and routinely under-sample density, yet the two enter the
+contained-metal calculation with exactly equal weight.</p>
+
+<div class="eq">
+  <span class="eqnum">(2.5)</span>
+  \[ T \;=\; V \times \rho \qquad\Longrightarrow\qquad
+     \frac{\Delta T}{T} \;=\; \frac{\Delta \rho}{\rho} \]
+  <div class="eqlabel">A proportional error in density is a proportional
+  error in tonnage, and therefore in contained metal, one-for-one.</div>
+</div>
+
+<p>If Toro adopts a density of 1.8 t/m&sup3; for the wash gravel when the
+true figure is 2.0, every tonnage and every contained-tin figure in the
+resource statement is understated by 10% &mdash; a material
+misstatement under any code. Density must be measured, by domain and by
+weathering state, not assumed.</p>
+
+<div class="tablewrap">
+<table class="data">
+  <tr><th>Method</th><th>Best for</th><th>Pitfall</th></tr>
+  <tr><td>Water displacement (Archimedes) on core</td><td>Competent,
+    non-porous primary rock</td><td>Porous or fractured samples absorb
+    water and over-read density</td></tr>
+  <tr><td>Wax-coating then displacement</td><td>Porous or friable
+    samples</td><td>Coating must be complete; wax density corrected
+    for</td></tr>
+  <tr><td>In-situ pit / sand replacement</td><td>Loose alluvial gravel
+    that cannot be cored</td><td>Labour-intensive; needs careful volume
+    measurement</td></tr>
+  <tr><td>Down-hole geophysical (gamma-gamma)</td><td>Continuous density
+    logging</td><td>Needs calibration against physical samples</td></tr>
+</table>
+</div>
+
+<p>For the Toro alluvial target the wash gravel is unconsolidated, so
+core displacement is impossible: an <em>in-situ</em> method (a measured
+excavation, weigh the material removed, survey the void volume) is
+required, and it must record the natural moisture state, since the
+codes require tonnage to be reported on a declared dry or wet basis. For
+the primary granite, fresh rock is near 2.6&ndash;2.7 t/m&sup3;, but the
+weathered cupola that hosts near-surface tin can be far lower, so density
+must be tied to the weathering profile in the lithology log.</p>
+
+<h2>2.6 QAQC: deciding whether the database can be trusted</h2>
+<p>Quality Assurance and Quality Control is the evidence system that lets
+a Competent Person certify the assay database. Without it, an estimate is
+uninsurable: you cannot defend numbers you cannot prove. QAQC separates
+two distinct properties of the data.</p>
+
+<div class="callout def">
+  <div class="ttl">Accuracy and precision</div>
+  <p><b>Accuracy</b> is freedom from bias &mdash; do the assays sit on
+  the true value on average? <b>Precision</b> is repeatability &mdash;
+  how widely do repeat measurements of the same material scatter? They
+  are independent. Data can be precise but biased (consistently 15% low),
+  or accurate but imprecise (right on average, wild scatter). A resource
+  needs both, and they are demonstrated by three different control
+  instruments.</p>
+</div>
+
+<div class="tablewrap">
+<table class="data">
+  <tr><th>Instrument</th><th>Tests</th><th>How</th><th>Typical rate</th></tr>
+  <tr><td>Certified Reference Material (standard)</td><td>Accuracy</td>
+    <td>A pulp of known, certified grade inserted blind into the batch;
+    must return within &plusmn;2 standard deviations</td><td>1 in 20</td></tr>
+  <tr><td>Blank</td><td>Contamination</td><td>Barren material inserted
+    after high-grade samples; must return near detection limit</td>
+    <td>1 in 20</td></tr>
+  <tr><td>Duplicate</td><td>Precision</td><td>A second sample of the same
+    material assayed independently; the pair scatter measures
+    repeatability</td><td>1 in 20</td></tr>
+</table>
+</div>
+
+<p>Standards are read on a <b>control chart</b>: the assayed value of the
+CRM plotted in batch order, with the certified mean and the &plusmn;2 and
+&plusmn;3 standard-deviation lines drawn. A point beyond &plusmn;3&sigma;,
+or a run of points on one side of the mean, signals a batch that must be
+investigated and probably re-assayed.</p>
+
+<p>Duplicates come in a hierarchy, and the hierarchy is informative.
+A <b>field (or twin) duplicate</b> repeats the whole sampling act and
+captures the total error, FSE included. A <b>coarse (preparation)
+duplicate</b> is split after crushing and isolates preparation error. A
+<b>pulp duplicate</b> is a second assay of the same final powder and
+isolates pure analytical error. Precision is read from the pair scatter,
+commonly as the relative difference:</p>
+
+<div class="eq">
+  <span class="eqnum">(2.6)</span>
+  \[ \mathrm{RD} \;=\; \frac{|x_1-x_2|}{\tfrac{1}{2}(x_1+x_2)}\times 100\% \]
+  <div class="eqlabel">Relative difference of a duplicate pair. Plotting
+  many pairs, well-behaved precision keeps most pairs within a tolerance
+  band (often 20&ndash;30% for a base-metal assay; wider for nuggety
+  minerals).</div>
+</div>
+
+<div class="callout pitfall">
+  <div class="ttl">What Toro's data cannot yet tell you</div>
+  <p>The Toro geochemical file contains several paired records at
+  identical coordinates &mdash; for example DBP-005A and DBP-005B,
+  DBP-029A and DBP-029B&prime;, DBP-033A and DBP-033A&prime;. The
+  within-pair spread is large: DBP-033's pair reads 7.59% and 2.28%
+  SnO&#8322; &mdash; a relative difference above 100%. But you cannot
+  currently tell <em>why</em>. Those suffixes might mean two stratigraphic
+  layers in the pit (real vertical variability, which is geology), or a
+  re-split of one sample (poor precision, which is a QAQC failure). The
+  reconnaissance sampling was not designed with a QAQC structure, so the
+  two explanations are confounded and cannot be separated. That, in one
+  example, is why a designed QAQC protocol &mdash; with deliberately
+  labelled, blind, randomly inserted duplicates &mdash; must run through
+  the next Toro campaign from the first sample.</p>
+</div>
+
+<h2>2.7 Worked example: auditing the Toro database</h2>
+<p>Apply the module. The file <code>Motimose_GeoChemData.csv</code> holds
+40 XRF records. Before a single statistic is computed, each record must
+be classified by <em>what it physically represents</em> &mdash; the
+discipline of section 2.3.</p>
+
+<p>Some records are not in-situ samples at all. Their identifiers carry
+mineral-separation tags (<code>Nb</code>, <code>Fe</code>, <code>Zr</code>,
+<code>SnO2+SiO2</code>). These are laboratory products: heavy-mineral
+fractions the lab separated out of one field sample. The record
+<code>DBP-010 SnO2+SiO2-2</code> assays 65.4% SnO&#8322; &mdash; that is a
+lab-made cassiterite concentrate, not a grade that exists anywhere in the
+ground. Including it in a grade statistic would be meaningless. It must
+be filtered out.</p>
+
+<div class="codeblock"><div class="code-head"><span class="lang">Python</span>
+  <span>classify every lab record by what it represents</span></div>
+<pre><code class="language-python">import pandas as pd, numpy as np
+
+geo = pd.read_csv("Motimose_GeoChemData.csv")
+
+# IDs carrying a mineral-separation tag are laboratory heavy-mineral
+# fractions, NOT in-situ field samples. They must not enter grade stats.
+sep_tags = ["Nb", "Fe", "Zr", "SnO2+SiO2", "FeB", "SnO2 (2)"]
+
+def is_separation(sid):
+    s = str(sid)
+    return any(t in s for t in sep_tags) and len(s.split()) > 1
+
+geo["record_type"] = np.where(
+    geo["Lab_Sample_ID"].apply(is_separation),
+    "lab_separation", "field_sample")
+
+print(geo["record_type"].value_counts())
+# field_sample      32
+# lab_separation     8
+</code></pre></div>
+
+<p>Eight of the 40 records are laboratory fractions; 32 are genuine field
+samples. Next, those 32 still over-represent some pits, because a pit
+logged with two layers (an A and a B sample) appears twice. For a spatial
+estimate each location must contribute <em>one</em> grade, or the
+variogram and the kriging system will see false zero-distance pairs. We
+<b>composite</b> the layer samples to one grade per pit.</p>
+
+<div class="codeblock"><div class="code-head"><span class="lang">Python</span>
+  <span>composite layer splits to one grade per pit location</span></div>
+<pre><code class="language-python">fs = geo[geo.record_type == "field_sample"].copy()
+
+comp = (fs.groupby("Field_Pit_ID")
+          .agg(Location =("Location",  "first"),
+               Latitude =("Latitude",  "first"),
+               Longitude=("Longitude", "first"),
+               n_splits =("SnO2",      "size"),
+               SnO2     =("SnO2",      "mean"))   # length-weight if logged
+          .reset_index())
+
+print(len(fs), "field samples ->", len(comp), "pit locations")
+# 32 field samples -> 26 pit locations
+</code></pre></div>
+
+<div class="callout key">
+  <div class="ttl">The audit result</div>
+  <p>The raw "40-sample" dataset resolves into <b>26 pit locations</b>
+  with a defensible in-situ concentrate grade. That number &mdash; not
+  40 &mdash; is the real spatial dataset that Modules 3, 4 and 5 work
+  with. Notice that proper compositing should be <em>length-weighted</em>
+  (a 2 m layer counts more than a 0.5 m layer); the simple mean above is
+  used only because the current field logs do not record consistent
+  layer thicknesses. Recording sampled thickness on every future pit is
+  therefore not bookkeeping &mdash; it is a prerequisite for a correct
+  composite.</p>
+</div>
+
+<div class="quiz">
+  <div class="q">Check your understanding: A Toro bulk sample of wash
+  gravel returns 4% SnO&#8322; from the laboratory. Why can this number
+  not be entered into a resource model as a block grade?</div>
+  <div class="opt" data-correct="0">Because SnO&#8322; must first be
+  converted to Sn metal.</div>
+  <div class="opt" data-correct="0">Because XRF is not accurate enough
+  for tin.</div>
+  <div class="opt" data-correct="1">Because it is the grade of the panned
+  concentrate; the in-situ grade also needs the HMC yield and the bulk
+  density of the gravel.</div>
+  <div class="opt" data-correct="0">Because 4% is below a typical tin
+  cut-off.</div>
+  <div class="explain">The assay describes the heavy-mineral concentrate,
+  not the ground. The in-situ grade is the chain of equation (2.4):
+  yield (HMC mass per bulk mass) multiplied by the concentrate grade
+  multiplied by in-situ bulk density. Skipping the yield and density
+  factors would overstate the deposit by one to two orders of magnitude.
+  The SnO&#8322;-to-Sn conversion is also needed, but it is a fixed 0.79
+  factor, not the reason the raw number is unusable.</div>
+</div>
+
+<div class="pagenav">
+  <a href="module-1.html"><div class="dir">&larr; Previous</div>
+    <div class="ttl">Module 1 &middot; Foundations</div></a>
+  <a class="next" href="module-3.html"><div class="dir">Next &rarr;</div>
+    <div class="ttl">Module 3 &middot; EDA &amp; Statistics</div></a>
+</div>
+
+</div>
+</main>
+</div>
+<script src="assets/course.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

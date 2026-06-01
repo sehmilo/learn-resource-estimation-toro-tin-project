@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Module 3 &middot; EDA &amp; Statistics &mdash; Toro Resource Estimation Course</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},
+  svg:{fontCache:'global'}};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand">
+    <a href="index.html">
+      <div class="ttl">Resource Estimation &amp; Geostatistics</div>
+      <div class="sub">Toro Tin Project &middot; ANRML26-137</div>
+    </a>
+  </div>
+  <nav>
+    <div class="nav-label">Course</div>
+    <a href="index.html"><span class="mnum">&#9737;</span>Course home</a>
+    <div class="nav-label">Modules</div>
+    <a href="module-1.html"><span class="mnum">1</span>Foundations</a>
+    <a href="module-2.html"><span class="mnum">2</span>Sampling &amp; Data</a>
+    <a href="module-3.html" class="active"><span class="mnum">3</span>EDA &amp; Statistics</a>
+    <a href="module-4.html"><span class="mnum">4</span>Variography</a>
+    <a href="module-5.html"><span class="mnum">5</span>Grade Estimation</a>
+    <a href="module-6.html"><span class="mnum">6</span>Reporting &amp; Capstone</a>
+  </nav>
+  <div class="foot">A technical training course built on the live
+    ANRML26-137 / EL-046017 datasets.</div>
+</aside>
+<main class="main">
+<div class="content">
+
+<div class="eyebrow">Module 3</div>
+<h1>Exploratory Data Analysis and the Statistics of Grade</h1>
+<div class="mod-meta">
+  <span>&#9201; 45&ndash;55 min</span>
+  <span>&#9776; 7 sections</span>
+  <span>&#9881; 1 interactive tool</span>
+  <span>&#10003; Prerequisite: Modules 1&ndash;2</span>
+</div>
+
+<p class="lead">Before grade can be estimated in space, it must be
+understood as a number. This module builds the statistical description
+of a grade dataset &mdash; its distribution, its skew, its outliers and
+its hidden spatial bias &mdash; and ends at the single most important
+judgement in the whole workflow: the decision of the stationary domain.</p>
+
+<div class="objectives">
+  <h4>Learning objectives</h4>
+  <ul>
+    <li>Compute and interpret the univariate statistics that describe a
+      grade distribution.</li>
+    <li>Explain why grades are lognormal, and use the log-transform and
+      probability plot correctly.</li>
+    <li>Recognise clustered sampling and correct the bias by
+      declustering.</li>
+    <li>Diagnose outliers and decide a defensible top-cut.</li>
+    <li>Composite samples to a common support and explain the variance
+      consequence.</li>
+    <li>State the stationarity assumption and define geological domains
+      for the two Toro orebodies.</li>
+  </ul>
+</div>
+
+<h2>3.1 Why exploratory data analysis comes first</h2>
+<p>Exploratory data analysis (EDA) is the deliberate, sceptical
+interrogation of a dataset before any model is imposed on it. It is not a
+formality. Every estimation method carries assumptions &mdash; that the
+data are of equal support, drawn from one population, free of blunders,
+representative in space &mdash; and EDA is where those assumptions are
+checked against reality. A variogram fitted to a dataset that secretly
+contains two geological populations is not a slightly worse model; it is
+a meaningless one.</p>
+
+<p>The Toro grade dataset, after the Module 2 audit, is 32 field-sample
+SnO&#8322; values resolving to 26 pit locations. Small &mdash; and that
+smallness is part of what EDA must reveal honestly.</p>
+
+<h2>3.2 The univariate description of grade</h2>
+<p>Treat the set of \(n\) grades as realisations of a random variable
+\(Z\). The first task is to describe that variable's distribution with a
+compact set of statistics. Each one answers a specific question.</p>
+
+<h3>Measures of central tendency</h3>
+<p>The <b>arithmetic mean</b> is the estimate of the deposit's average
+grade and therefore, with tonnage, of contained metal:</p>
+
+<div class="eq">
+  <span class="eqnum">(3.1)</span>
+  \[ \bar{z} \;=\; \frac{1}{n}\sum_{i=1}^{n} z_i \]
+</div>
+
+<p>The <b>median</b> \(M\), the 50th percentile, is the central value
+when the data are ranked. For a symmetric distribution mean and median
+coincide. When they diverge, the gap is itself a diagnostic: for grade
+data the mean almost always exceeds the median, and the size of that
+excess measures skew.</p>
+
+<h3>Measures of spread</h3>
+<p>The <b>sample variance</b> uses the divisor \(n-1\) (Bessel's
+correction), which makes it an unbiased estimator of the population
+variance:</p>
+
+<div class="eq">
+  <span class="eqnum">(3.2)</span>
+  \[ s^2 \;=\; \frac{1}{n-1}\sum_{i=1}^{n}(z_i-\bar{z})^2,
+     \qquad s=\sqrt{s^2} \]
+</div>
+
+<p>Variance is the master quantity of this entire course: geostatistics
+is, in the end, the study of how variance is structured in space. The
+<b>coefficient of variation</b> rescales the standard deviation by the
+mean to give a dimensionless measure of relative variability:</p>
+
+<div class="eq">
+  <span class="eqnum">(3.3)</span>
+  \[ \mathrm{CV} \;=\; \frac{s}{\bar{z}} \]
+  <div class="eqlabel">A rule of thumb: CV &lt; 0.5 is a well-behaved
+  deposit; CV &gt; 1 signals a difficult, erratic, high-variance grade
+  that will be hard to estimate and will likely need a top-cut.</div>
+</div>
+
+<h3>Measure of shape</h3>
+<p>The <b>coefficient of skewness</b> is the third standardised moment.
+It measures asymmetry; a positive value means a long tail of high
+values:</p>
+
+<div class="eq">
+  <span class="eqnum">(3.4)</span>
+  \[ \gamma_1 \;=\; \frac{\tfrac{1}{n}\sum_{i=1}^{n}(z_i-\bar{z})^3}
+     {s^3} \]
+</div>
+
+<div class="callout toro">
+  <div class="ttl">The Toro SnO2 dataset, described</div>
+  <p>Running these formulas on the 32 field-sample SnO&#8322; grades:</p>
+  <div class="tablewrap" style="margin-top:10px">
+  <table class="data">
+    <tr><th>Statistic</th><th>Value</th><th>Reading</th></tr>
+    <tr><td>Count n</td><td class="num">32</td><td>small &mdash;
+      reconnaissance scale</td></tr>
+    <tr><td>Minimum</td><td class="num">0.15%</td><td>&nbsp;</td></tr>
+    <tr><td>Maximum</td><td class="num">8.84%</td><td>a 59-fold range</td></tr>
+    <tr><td>Mean</td><td class="num">2.27%</td><td>&nbsp;</td></tr>
+    <tr><td>Median</td><td class="num">1.50%</td><td>well below the mean
+      &mdash; right-skewed</td></tr>
+    <tr><td>Std deviation</td><td class="num">2.21%</td><td>&nbsp;</td></tr>
+    <tr><td>CV</td><td class="num">0.98</td><td>borderline erratic &mdash;
+      expect a top-cut decision</td></tr>
+    <tr><td>Skewness</td><td class="num">+1.48</td><td>strong positive
+      skew</td></tr>
+  </table>
+  </div>
+  <p>The mean exceeds the median by 51%, the CV is almost 1, and skewness
+  is +1.48. Every statistic tells the same story: this is a skewed,
+  high-variance grade. That is not a Toro peculiarity &mdash; it is how
+  metal grades almost always behave, and section 3.3 explains why.</p>
+</div>
+
+<figure>
+  <img src="assets/figures/fig_histogram.png" alt="SnO2 histogram">
+  <figcaption><b>Figure 3.1</b> &mdash; Histogram of the 32 Toro
+  SnO&#8322; field grades. The long right tail drags the mean (bronze)
+  well above the median (navy dashed). A symmetric, bell-shaped
+  histogram would have placed them together.</figcaption>
+</figure>
+
+<h2>3.3 The lognormal model of grade</h2>
+<p>Metal grades are positively skewed for a physical reason. Grade is the
+product of many multiplicative geological processes &mdash; fluid flux,
+partitioning, fractionation, weathering, mechanical concentration. When
+independent random factors <em>multiply</em>, their product tends, by the
+multiplicative form of the central limit theorem, towards a
+<b>lognormal</b> distribution. A variable \(Z\) is lognormal when its
+logarithm is normal:</p>
+
+<div class="eq">
+  <span class="eqnum">(3.5)</span>
+  \[ Y=\ln Z \;\sim\; \mathcal{N}(\mu,\sigma^2) \]
+</div>
+
+<p>The lognormal model is not a curiosity &mdash; it explains the
+mean-median gap exactly. For a lognormal variable:</p>
+
+<div class="eq">
+  <span class="eqnum">(3.6)</span>
+  \[ \operatorname{median}(Z)=e^{\mu},\qquad
+     \mathbb{E}[Z]=e^{\,\mu+\sigma^2/2},\qquad
+     \operatorname{Var}(Z)=\big(e^{\sigma^2}-1\big)e^{\,2\mu+\sigma^2} \]
+  <div class="eqlabel">Because \(\sigma^2/2>0\), the mean always exceeds
+  the median &mdash; and the gap widens as the log-variance grows.</div>
+</div>
+
+<p>The diagnostic tools follow directly. The <b>log-transform</b>
+\(Y=\ln Z\) should turn a skewed grade histogram into a symmetric one.
+The <b>lognormal probability plot</b> &mdash; ordered log-grades against
+standard normal quantiles &mdash; should fall on a straight line if the
+model holds; departures at the top reveal a second high-grade population
+or outliers.</p>
+
+<figure>
+  <img src="assets/figures/fig_loghistogram.png" alt="Log histogram">
+  <figcaption><b>Figure 3.2</b> &mdash; The same 32 grades after a
+  log-transform. The skewness collapses from +1.48 to &minus;0.09:
+  in log space the distribution is essentially symmetric. The Toro
+  SnO&#8322; grade is, to a good approximation, lognormal.</figcaption>
+</figure>
+
+<figure>
+  <img src="assets/figures/fig_probplot.png" alt="Lognormal probability plot">
+  <figcaption><b>Figure 3.3</b> &mdash; Lognormal probability plot. The
+  log-grades track the straight line closely (R = 0.99), confirming the
+  lognormal model and &mdash; just as important &mdash; showing no
+  break-away upper population that would force a separate high-grade
+  domain.</figcaption>
+</figure>
+
+<div class="callout note">
+  <div class="ttl">A subtlety: estimating the mean of a lognormal</div>
+  <p>When a dataset is small and strongly lognormal, the ordinary
+  arithmetic mean is an unbiased but <em>high-variance</em> estimator of
+  the true mean &mdash; one or two samples can move it substantially.
+  Sichel's <em>t</em>-estimator uses the lognormal form (equation 3.6) to
+  estimate \(\mathbb{E}[Z]\) more efficiently from \(\mu\) and
+  \(\sigma^2\). With only 32 Toro samples this is a real effect: it is a
+  reason the global mean grade itself carries meaningful uncertainty,
+  quite apart from where the metal sits in space.</p>
+</div>
+
+<div class="callout pitfall">
+  <div class="ttl">Never back-transform a kriged log-grade naively</div>
+  <p>It is tempting to estimate in log space (it is better-behaved) and
+  then exponentiate. But \(\mathbb{E}[e^{Y}]\neq e^{\mathbb{E}[Y]}\):
+  exponentiating a kriged log-grade does <em>not</em> give the kriged
+  grade, and the error is a systematic bias. Lognormal and indicator
+  kriging exist precisely to handle skewed grades correctly. The safe
+  default, used in Module 5, is to estimate in original units with
+  ordinary kriging after a sensible top-cut.</p>
+</div>
+
+<h2>3.4 Clustered sampling and declustering</h2>
+<p>Exploration data are never laid down on a neat grid. Geologists drill
+and pit where they expect grade &mdash; near showings, along anomalies,
+around artisanal workings. The result is <b>preferential clustering</b>:
+high-grade ground is over-sampled relative to its true area. The naive
+arithmetic mean of equation (3.1) then over-weights the cluster and
+<em>overstates</em> the deposit.</p>
+
+<p>The fix is <b>declustering</b>: replace the equal-weight mean with a
+weighted mean in which each sample's weight reflects the area it
+represents.</p>
+
+<div class="eq">
+  <span class="eqnum">(3.7)</span>
+  \[ \bar{z}_{\,dc} \;=\; \sum_{i=1}^{n} w_i\,z_i,
+     \qquad \sum_{i=1}^{n} w_i = 1 \]
+</div>
+
+<p>In <b>cell declustering</b>, a regular grid is laid over the data;
+each occupied cell is given an equal share of the total weight, and the
+samples inside a cell split that cell's weight between them. A sample in
+a crowded cell therefore receives a small weight; an isolated sample
+receives a large one. The cell size is varied and the one that
+<em>minimises</em> the declustered mean is often chosen, on the logic
+that clustering was towards high grade.</p>
+
+<div class="callout toro">
+  <div class="ttl">Clustering in the Toro data</div>
+  <p>The Toro sampling is markedly clustered. The Bishiwai and Yadabongo
+  drainages carry the great majority of the 26 pits, tightly spaced;
+  Kadade, several kilometres south, carries only a handful. If Bishiwai
+  happens to be richer than Kadade, the naive mean of 2.27% SnO&#8322; is
+  biased towards Bishiwai and overstates the licence as a whole. A
+  declustered mean is the honest global figure &mdash; and the gap
+  between the two numbers is a direct measure of how much the sampling
+  pattern, rather than the geology, is shaping your headline grade.</p>
+</div>
+
+<h2>3.5 Outliers and the top-cut decision</h2>
+<p>In a skewed dataset a few extreme values exert leverage far beyond
+their number. With \(n=32\), each Toro sample contributes on average
+1/32 = 3.1% of the count &mdash; but the single 8.84% value contributes
+roughly 12% of the summed grade. If that one pit is a genuine but
+unrepresentative high, kriging will smear its grade across a wide volume
+and overstate contained metal. <b>Top-cutting</b> (capping) limits this:
+values above a chosen cap are reset to the cap.</p>
+
+<p>The cap is a matter of documented judgement, informed by several
+converging diagnostics: the point on the lognormal probability plot
+where the upper tail breaks away from the line; the cumulative
+probability curve; the <em>metal-at-risk</em> carried by the top one or
+two samples; and a plot of the resulting mean against cap value, looking
+for where the mean stabilises.</p>
+
+<figure>
+  <img src="assets/figures/fig_cumprob.png" alt="Cumulative probability plot">
+  <figcaption><b>Figure 3.4</b> &mdash; Cumulative probability plot of the
+  Toro SnO&#8322; grades. The top two samples (7.59% and 8.84%) sit above
+  a visible inflection; the 97.5th percentile is 7.87%. A cap in the
+  7&ndash;8% range removes the leverage of those two values while
+  discarding very little real metal.</figcaption>
+</figure>
+
+<div class="widget" id="topcut-widget"></div>
+
+<p>The widget makes the trade-off concrete. Cap too hard and you throw
+away metal that is really there and sterilise the project's upside; cap
+too lightly and a single erratic pit drives the resource. There is no
+formula that removes the judgement &mdash; but there is a firm rule:
+whatever cap you choose, it must be stated, justified, and its effect on
+the contained metal disclosed. An undisclosed top-cut is a reporting
+failure under every code.</p>
+
+<h2>3.6 Compositing: putting samples on equal support</h2>
+<p>Statistics implicitly assume the data are comparable &mdash; that each
+\(z_i\) describes the same kind of thing. Raw samples violate this: a
+0.5 m drill interval and a 2 m interval, or a 100 kg and a 250 kg bulk
+sample, are different <em>supports</em>. <b>Support</b> is the size,
+shape and orientation of the volume a grade refers to, and it is a
+property that must be tracked as carefully as the grade itself.</p>
+
+<p><b>Compositing</b> combines raw samples into regular intervals of a
+common support &mdash; typically fixed-length down-hole composites. The
+composite grade is a <em>length-weighted</em> (for placers,
+volume- or mass-weighted) average:</p>
+
+<div class="eq">
+  <span class="eqnum">(3.8)</span>
+  \[ z_{\text{comp}} \;=\;
+     \frac{\sum_{i} \ell_i\, z_i}{\sum_{i} \ell_i} \]
+  <div class="eqlabel">Length-weighted composite. A 2 m interval must
+  count four times as much as a 0.5 m interval &mdash; an unweighted mean
+  silently biases the result.</div>
+</div>
+
+<p>Compositing has a consequence that reaches forward into the rest of
+the course: <b>averaging reduces variance</b>. Composited grades scatter
+less than the raw samples they are built from, because combining volumes
+averages out small-scale fluctuation. This is the first appearance of the
+<em>support effect</em> &mdash; the principle that variance falls as the
+volume of estimation grows. It is why a block model of large blocks is
+smoother than the drill data, and it is formalised by the
+volume-variance relationship in Module 6.</p>
+
+<div class="callout note">
+  <div class="ttl">Toro and the missing thickness</div>
+  <p>The Module 2 audit composited the Toro layer samples with a simple
+  mean, only because the field logs do not consistently record the
+  thickness of each sampled layer. Equation (3.8) shows why that is a
+  genuine compromise rather than a tidy-up: without \(\ell_i\), a thin,
+  rich gravel stringer and a thick, lean one are averaged as equals.
+  Recording the sampled interval on every future pit and drillhole is
+  the precondition for a correct composite &mdash; and therefore for a
+  correct grade.</p>
+</div>
+
+<h2>3.7 Domains and the decision of stationarity</h2>
+<p>This is the most consequential idea in the module, and arguably in the
+course. Every estimation method assumes that the data being pooled belong
+to <em>one population</em> &mdash; that grade behaves in a statistically
+consistent way across the volume being estimated. That assumption is
+called <b>stationarity</b>.</p>
+
+<div class="callout def">
+  <div class="ttl">Stationarity and the domain</div>
+  <p><b>Stationarity</b> is the assumption that the statistical
+  properties of grade &mdash; its mean, its variance, its spatial
+  continuity &mdash; do not depend on absolute position within the volume
+  considered. A <b>domain</b> (or estimation domain) is a volume of rock
+  within which stationarity can reasonably be assumed: one mineralisation
+  style, one grade population, one set of geological controls.</p>
+</div>
+
+<p>Stationarity is not a property you can test for and prove. It is, in
+Journel's phrase, a <em>decision</em> &mdash; a modelling choice made by
+the geologist, defended by geological reasoning and supported, not
+established, by statistics. The supporting evidence includes side-by-side
+histograms and box plots of candidate sub-areas, and <b>contact
+analysis</b>: plotting grade against distance across a proposed boundary
+to see whether it steps (a <em>hard</em> boundary, estimate each side
+only from its own data) or grades through (a <em>soft</em> boundary).</p>
+
+<figure>
+  <img src="assets/figures/fig_boxplot_domain.png" alt="Box plots by domain">
+  <figcaption><b>Figure 3.5</b> &mdash; SnO&#8322; grade by geographic
+  area. Bishiwai, Yadabongo and Kadade overlap substantially in the body
+  of the distribution, which is consistent with one shared alluvial
+  population &mdash; but the sample numbers are too small to settle the
+  question. Domaining at Toro must be led by drainage geology, with
+  statistics in a supporting role.</figcaption>
+</figure>
+
+<div class="callout pitfall">
+  <div class="ttl">The cardinal sin: pooling across domains</div>
+  <p>If two genuinely different populations are pooled and estimated
+  together, the result is wrong everywhere. A high-grade vein pooled with
+  its low-grade halo produces a variogram that describes neither, and a
+  kriging that bleeds vein grade into waste and waste grade into vein.
+  At Toro the non-negotiable boundary is between the <b>alluvial</b> and
+  <b>primary</b> targets: they are different rocks, different grade
+  units (g/m&sup3; versus % Sn), different geometries and different
+  populations. They must be estimated as entirely separate domains. They
+  may not share a single sample, a single variogram, or a single block
+  model.</p>
+</div>
+
+<p>Within the alluvial target, a further question is whether each
+drainage &mdash; Bishiwai, Yadabongo, Kadade &mdash; is its own placer
+domain. Geologically that is plausible: each drainage is a separate
+sediment-transport system with its own source and hydraulics. The
+present data cannot resolve it, so the working decision is to carry them
+as separate sub-domains and revisit once drilling adds data &mdash; a
+conservative choice that avoids the cardinal sin.</p>
+
+<h2>3.8 Worked example: EDA on the Toro grades in Python</h2>
+<p>The whole module condenses into a short, reproducible script. This is
+the EDA section of <code>toro_analysis.py</code>.</p>
+
+<div class="codeblock"><div class="code-head"><span class="lang">Python</span>
+  <span>univariate statistics and the lognormal check</span></div>
+<pre><code class="language-python">import numpy as np, pandas as pd
+from scipy import stats
+
+fs = pd.read_csv("data/toro_field_samples.csv")
+z  = fs["SnO2"].values                       # 32 field-sample grades
+
+n      = len(z)
+mean   = z.mean()
+median = np.median(z)
+sd     = z.std(ddof=1)                       # Bessel's n-1
+cv     = sd / mean
+skew   = stats.skew(z)
+
+print(f"n={n}  mean={mean:.2f}  median={median:.2f}")
+print(f"sd={sd:.2f}  CV={cv:.2f}  skew={skew:+.2f}")
+# n=32  mean=2.27  median=1.50
+# sd=2.21  CV=0.98  skew=+1.48
+
+# lognormal test: skewness should collapse under the log-transform
+lz = np.log(z)
+print(f"log-skew={stats.skew(lz):+.2f}")      # log-skew=-0.09
+
+# how much metal sits in the top two samples?
+top2 = np.sort(z)[-2:].sum() / z.sum() * 100
+print(f"top 2 of 32 samples carry {top2:.0f}% of summed grade")
+# top 2 of 32 samples carry 23% of summed grade
+</code></pre></div>
+
+<p>The last line is the quantitative case for the top-cut: two samples
+out of 32 &mdash; 6% of the data &mdash; carry 23% of the summed grade.
+That concentration of leverage is exactly what capping is designed to
+control, and exactly what the codes require you to disclose.</p>
+
+<div class="quiz">
+  <div class="q">Check your understanding: A Toro grade dataset has mean
+  2.3%, median 1.5% and CV 0.98. The log-transformed data have skewness
+  near zero. Which conclusion is best supported?</div>
+  <div class="opt" data-correct="0">The data contain serious blunders and
+  should be discarded.</div>
+  <div class="opt" data-correct="1">The grade is approximately lognormal
+  and high-variance; expect to consider a top-cut and to estimate with
+  care.</div>
+  <div class="opt" data-correct="0">The mean and median should be
+  averaged to get the true grade.</div>
+  <div class="opt" data-correct="0">The deposit is low-grade and not
+  worth pursuing.</div>
+  <div class="explain">Mean above median plus positive raw skew, both
+  resolved by the log-transform, is the signature of a lognormal grade
+  &mdash; the normal state for metal grades, not a sign of error. A CV
+  near 1 flags a high-variance, erratic grade, which means a top-cut
+  should be considered and estimation done carefully. Averaging mean and
+  median has no statistical meaning; and a 2.3% SnO&#8322; concentrate
+  grade says nothing yet about the in-situ economics, which depend on the
+  volume-grade chain of Module 2.</div>
+</div>
+
+<div class="pagenav">
+  <a href="module-2.html"><div class="dir">&larr; Previous</div>
+    <div class="ttl">Module 2 &middot; Sampling &amp; Data</div></a>
+  <a class="next" href="module-4.html"><div class="dir">Next &rarr;</div>
+    <div class="ttl">Module 4 &middot; Variography</div></a>
+</div>
+
+</div>
+</main>
+</div>
+<script src="assets/course.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

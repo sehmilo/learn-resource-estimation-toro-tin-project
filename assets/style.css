@@ -1,0 +1,328 @@
+/* ============================================================
+   Toro Tin Project - Resource Estimation & Geostatistics
+   Course stylesheet
+   ============================================================ */
+:root{
+  --navy:#1f2a44; --navy2:#2b3a5c; --bronze:#c8702d; --bronze-d:#a85a1f;
+  --teal:#2a7d8c; --ink:#26303f; --paper:#faf7f1; --paper2:#f3ede1;
+  --line:#ddd6c8; --muted:#6a6f78; --good:#3f7d5a; --warn:#b4451f;
+  --code-bg:#1c2433; --shadow:0 2px 14px rgba(31,42,68,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  background:var(--paper); color:var(--ink); line-height:1.68;
+  font-size:17px; -webkit-font-smoothing:antialiased;
+}
+.layout{display:flex; min-height:100vh}
+
+/* ---------- sidebar ---------- */
+.sidebar{
+  width:288px; flex-shrink:0; background:var(--navy); color:#e9e6df;
+  position:sticky; top:0; height:100vh; overflow-y:auto; padding:26px 0;
+}
+.sidebar .brand{padding:0 24px 18px; border-bottom:1px solid #34405e}
+.sidebar .brand a{color:#fff; text-decoration:none}
+.sidebar .brand .ttl{font-size:18px; font-weight:700; letter-spacing:.2px}
+.sidebar .brand .sub{font-size:12.5px; color:#9aa6c2; margin-top:3px;
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; letter-spacing:.3px}
+.sidebar nav{padding:14px 0}
+.sidebar nav a{
+  display:block; padding:9px 24px; color:#c4cbdd; text-decoration:none;
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; font-size:14px;
+  border-left:3px solid transparent; transition:.15s;
+}
+.sidebar nav a:hover{background:#283353; color:#fff}
+.sidebar nav a.active{
+  background:#283353; color:#fff; border-left-color:var(--bronze); font-weight:600;
+}
+.sidebar nav a .mnum{
+  display:inline-block; width:22px; height:22px; line-height:22px;
+  text-align:center; background:#34405e; border-radius:5px; font-size:12px;
+  margin-right:9px; color:#9aa6c2;
+}
+.sidebar nav a.active .mnum{background:var(--bronze); color:#fff}
+.sidebar nav .nav-label{
+  padding:14px 24px 6px; font-size:11px; letter-spacing:1.4px;
+  text-transform:uppercase; color:#6b7796;
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif;
+}
+.sidebar .foot{
+  padding:18px 24px 4px; font-size:11.5px; color:#6b7796;
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; line-height:1.6;
+}
+
+/* ---------- main ---------- */
+.main{flex:1; min-width:0}
+.content{max-width:880px; margin:0 auto; padding:54px 46px 110px}
+.content.wide{max-width:1120px}
+
+/* ---------- typography ---------- */
+h1,h2,h3,h4{font-family:-apple-system,Segoe UI,Roboto,sans-serif;
+  color:var(--navy); line-height:1.28; font-weight:700}
+h1{font-size:33px; margin-bottom:8px; letter-spacing:-.4px}
+h2{font-size:24px; margin:42px 0 14px; padding-bottom:8px;
+  border-bottom:2px solid var(--line)}
+h3{font-size:19.5px; margin:30px 0 10px; color:var(--navy2)}
+h4{font-size:16px; margin:22px 0 8px; color:var(--bronze-d);
+  text-transform:uppercase; letter-spacing:.6px; font-size:13.5px}
+p{margin:13px 0}
+ul,ol{margin:13px 0 13px 26px}
+li{margin:7px 0}
+a{color:var(--teal)}
+strong{color:var(--navy)}
+em{color:var(--bronze-d)}
+.lead{font-size:19px; color:#3a4453; line-height:1.6}
+hr{border:none; border-top:1px solid var(--line); margin:34px 0}
+
+/* ---------- eyebrow / module header ---------- */
+.eyebrow{
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; font-size:12.5px;
+  letter-spacing:2px; text-transform:uppercase; color:var(--bronze);
+  font-weight:700; margin-bottom:6px;
+}
+.mod-meta{
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; font-size:13.5px;
+  color:var(--muted); margin:14px 0 8px; display:flex; gap:18px; flex-wrap:wrap;
+}
+.mod-meta span{display:flex; align-items:center; gap:6px}
+
+/* ---------- callouts ---------- */
+.callout{
+  border-radius:9px; padding:16px 20px 16px 20px; margin:20px 0;
+  border-left:5px solid var(--teal); background:#fff; box-shadow:var(--shadow);
+  font-size:16px;
+}
+.callout .ttl{
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; font-weight:700;
+  font-size:13px; letter-spacing:.8px; text-transform:uppercase;
+  margin-bottom:6px; color:var(--teal);
+}
+.callout p:first-of-type{margin-top:0}
+.callout p:last-child{margin-bottom:0}
+.callout.key{border-left-color:var(--bronze); background:#fdf6ee}
+.callout.key .ttl{color:var(--bronze-d)}
+.callout.toro{border-left-color:var(--navy); background:#eef1f6}
+.callout.toro .ttl{color:var(--navy)}
+.callout.pitfall{border-left-color:var(--warn); background:#fbeee9}
+.callout.pitfall .ttl{color:var(--warn)}
+.callout.note{border-left-color:var(--teal); background:#ecf4f5}
+.callout.def{border-left-color:var(--good); background:#eef4ef}
+.callout.def .ttl{color:var(--good)}
+
+/* ---------- objectives box ---------- */
+.objectives{
+  background:var(--navy); color:#e9e6df; border-radius:11px;
+  padding:24px 28px; margin:26px 0;
+}
+.objectives h4{color:var(--bronze); margin-top:0}
+.objectives ul{margin:10px 0 0 20px}
+.objectives li{margin:8px 0; color:#d6d8de}
+.objectives li::marker{color:var(--bronze)}
+
+/* ---------- equations ---------- */
+.eq{
+  background:#fff; border:1px solid var(--line); border-radius:9px;
+  padding:14px 20px; margin:20px 0; overflow-x:auto; box-shadow:var(--shadow);
+}
+.eq .eqnum{float:right; color:var(--muted); font-size:14px;
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif}
+.eqlabel{font-family:-apple-system,Segoe UI,Roboto,sans-serif;
+  font-size:12.5px; color:var(--muted); margin-top:4px}
+
+/* ---------- code ---------- */
+.codeblock{margin:20px 0; border-radius:9px; overflow:hidden;
+  box-shadow:var(--shadow)}
+.code-head{
+  background:#141b28; color:#8b97ad; padding:8px 16px; font-size:12px;
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; letter-spacing:.6px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.code-head .lang{color:#c8702d; font-weight:700}
+pre{background:var(--code-bg); margin:0; padding:16px 18px; overflow-x:auto}
+pre code{
+  font-family:"SF Mono",Menlo,Consolas,"Roboto Mono",monospace;
+  font-size:13.5px; line-height:1.62; color:#dfe4ee;
+}
+code{font-family:"SF Mono",Menlo,Consolas,monospace; font-size:14.5px;
+  background:var(--paper2); padding:1.5px 6px; border-radius:4px;
+  color:var(--bronze-d)}
+pre code{background:none; padding:0; color:#dfe4ee}
+
+/* ---------- figures ---------- */
+figure{margin:24px 0; text-align:center}
+figure img{
+  max-width:100%; border:1px solid var(--line); border-radius:8px;
+  background:#fff; box-shadow:var(--shadow);
+}
+figcaption{
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; font-size:13.5px;
+  color:var(--muted); margin-top:9px; line-height:1.5;
+}
+figcaption b{color:var(--navy)}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto; margin:20px 0}
+table.data{
+  border-collapse:collapse; width:100%; font-size:14.5px;
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; background:#fff;
+  box-shadow:var(--shadow); border-radius:8px; overflow:hidden;
+}
+table.data th{
+  background:var(--navy); color:#fff; padding:10px 13px; text-align:left;
+  font-weight:600; font-size:13px; letter-spacing:.3px;
+}
+table.data td{padding:9px 13px; border-bottom:1px solid var(--line)}
+table.data tr:nth-child(even) td{background:var(--paper2)}
+table.data tr:last-child td{border-bottom:none}
+table.data .num{text-align:right; font-variant-numeric:tabular-nums}
+table.data caption{
+  caption-side:bottom; font-size:13px; color:var(--muted); padding-top:8px;
+  text-align:left;
+}
+
+/* ---------- interactive widget ---------- */
+.widget{
+  background:#fff; border:1px solid var(--line); border-radius:11px;
+  padding:22px 24px; margin:24px 0; box-shadow:var(--shadow);
+}
+.widget .wtitle{
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; font-weight:700;
+  color:var(--navy); font-size:15px; margin-bottom:4px;
+}
+.widget .wsub{font-family:-apple-system,Segoe UI,Roboto,sans-serif;
+  font-size:13px; color:var(--muted); margin-bottom:14px}
+.controls{display:flex; flex-wrap:wrap; gap:18px 26px; margin:14px 0}
+.ctrl{font-family:-apple-system,Segoe UI,Roboto,sans-serif; font-size:13px;
+  min-width:190px; flex:1}
+.ctrl label{display:flex; justify-content:space-between; color:var(--navy);
+  font-weight:600; margin-bottom:5px}
+.ctrl label .val{color:var(--bronze-d); font-variant-numeric:tabular-nums}
+.ctrl input[type=range]{width:100%; accent-color:var(--bronze)}
+.readout{
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; font-size:13.5px;
+  background:var(--paper2); border-radius:7px; padding:10px 14px; margin-top:8px;
+  color:var(--navy);
+}
+.readout b{color:var(--bronze-d); font-variant-numeric:tabular-nums}
+.btn-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+button.wbtn{
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; font-size:13px;
+  background:var(--navy); color:#fff; border:none; border-radius:7px;
+  padding:8px 16px; cursor:pointer; transition:.15s; font-weight:600;
+}
+button.wbtn:hover{background:var(--bronze)}
+button.wbtn.alt{background:var(--paper2); color:var(--navy)}
+button.wbtn.alt:hover{background:var(--bronze); color:#fff}
+
+/* ---------- page nav ---------- */
+.pagenav{
+  display:flex; justify-content:space-between; gap:16px; margin-top:54px;
+  padding-top:26px; border-top:2px solid var(--line);
+}
+.pagenav a{
+  flex:1; text-decoration:none; padding:16px 20px; border-radius:10px;
+  background:#fff; border:1px solid var(--line); box-shadow:var(--shadow);
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; transition:.15s;
+}
+.pagenav a:hover{border-color:var(--bronze); transform:translateY(-2px)}
+.pagenav a.next{text-align:right}
+.pagenav .dir{font-size:12px; color:var(--muted); letter-spacing:1px;
+  text-transform:uppercase}
+.pagenav .ttl{font-size:15.5px; color:var(--navy); font-weight:700; margin-top:3px}
+.pagenav a.disabled{opacity:.4; pointer-events:none}
+
+/* ---------- quiz ---------- */
+.quiz{background:#fff; border:1px solid var(--line); border-radius:11px;
+  padding:22px 24px; margin:22px 0; box-shadow:var(--shadow)}
+.quiz .q{font-weight:700; color:var(--navy);
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; margin-bottom:10px}
+.quiz .opt{
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; font-size:14.5px;
+  display:block; padding:10px 14px; margin:7px 0; border:1px solid var(--line);
+  border-radius:8px; cursor:pointer; transition:.12s; background:var(--paper);
+}
+.quiz .opt:hover{border-color:var(--teal)}
+.quiz .opt.correct{background:#eef4ef; border-color:var(--good); color:var(--good)}
+.quiz .opt.wrong{background:#fbeee9; border-color:var(--warn); color:var(--warn)}
+.quiz .explain{
+  font-family:-apple-system,Segoe UI,Roboto,sans-serif; font-size:13.5px;
+  margin-top:12px; padding:12px 14px; background:var(--paper2);
+  border-radius:8px; display:none; color:var(--ink);
+}
+.quiz .explain.show{display:block}
+
+/* ---------- misc ---------- */
+.tag{display:inline-block; font-family:-apple-system,Segoe UI,Roboto,sans-serif;
+  font-size:11.5px; font-weight:700; letter-spacing:.5px; padding:3px 9px;
+  border-radius:20px; background:var(--paper2); color:var(--navy2);
+  text-transform:uppercase; margin-right:6px}
+.tag.alluvial{background:#e7f0e9; color:var(--good)}
+.tag.primary{background:#eee7df; color:var(--bronze-d)}
+.symkey{font-family:-apple-system,Segoe UI,Roboto,sans-serif; font-size:14px;
+  background:#fff; border:1px solid var(--line); border-radius:9px;
+  padding:8px 16px; margin:16px 0; box-shadow:var(--shadow)}
+.symkey dt{float:left; clear:left; font-weight:700; color:var(--bronze-d);
+  width:74px; padding:5px 0}
+.symkey dd{margin-left:84px; padding:5px 0; border-bottom:1px solid var(--paper2)}
+.symkey dd:last-child{border-bottom:none}
+
+/* ---------- responsive ---------- */
+@media(max-width:1080px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%; height:auto; position:static}
+  .sidebar nav{display:flex; flex-wrap:wrap; padding:8px}
+  .sidebar nav a{border-left:none; border-bottom:3px solid transparent}
+  .sidebar nav .nav-label,.sidebar .foot{display:none}
+  .content{padding:34px 22px 80px}
+  .pagenav{flex-direction:column}
+}
+
+/* ---------- landing page ---------- */
+.hero{
+  background:linear-gradient(135deg,#1f2a44 0%,#2b3a5c 60%,#34405e 100%);
+  color:#fff; border-radius:14px; padding:46px 48px; margin-bottom:14px;
+  position:relative; overflow:hidden;
+}
+.hero::after{
+  content:""; position:absolute; right:-60px; top:-60px; width:280px;
+  height:280px; border-radius:50%;
+  background:radial-gradient(circle,rgba(200,112,45,.30),transparent 70%);
+}
+.hero .eyebrow{color:#e0a878}
+.hero h1{color:#fff; font-size:38px; max-width:680px; margin-bottom:12px}
+.hero p{font-size:18px; color:#cdd3e2; max-width:660px}
+.hero .stats{display:flex; gap:34px; margin-top:26px; flex-wrap:wrap}
+.hero .stats .s .n{font-size:28px; font-weight:800; color:#e0a878;
+  font-family:-apple-system,Segoe UI,sans-serif}
+.hero .stats .s .l{font-size:12.5px; color:#9aa6c2; letter-spacing:.5px;
+  font-family:-apple-system,Segoe UI,sans-serif}
+.mod-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:18px;
+  margin:24px 0}
+.mod-card{
+  background:#fff; border:1px solid var(--line); border-radius:12px;
+  padding:22px 24px; text-decoration:none; color:var(--ink);
+  box-shadow:var(--shadow); transition:.16s; display:block;
+}
+.mod-card:hover{transform:translateY(-3px); border-color:var(--bronze)}
+.mod-card .mc-num{
+  display:inline-block; width:34px; height:34px; line-height:34px;
+  text-align:center; background:var(--navy); color:#fff; border-radius:8px;
+  font-weight:800; font-family:-apple-system,Segoe UI,sans-serif; font-size:16px;
+}
+.mod-card h3{display:inline-block; margin:0 0 0 12px; vertical-align:middle;
+  font-size:18px}
+.mod-card p{font-size:14.5px; color:#4a5260; margin:12px 0 0}
+.mod-card .mc-tags{margin-top:12px}
+.feat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;
+  margin:20px 0}
+.feat{background:#fff; border:1px solid var(--line); border-radius:10px;
+  padding:18px; box-shadow:var(--shadow)}
+.feat h4{margin-top:0}
+.feat p{font-size:14px; margin:6px 0 0}
+@media(max-width:860px){
+  .mod-grid,.feat-grid{grid-template-columns:1fr}
+  .hero{padding:32px 26px}
+  .hero h1{font-size:28px}
+}

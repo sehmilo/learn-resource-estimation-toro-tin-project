@@ -1,0 +1,107 @@
+% ===== Toro Resource Estimation Course - shared PDF preamble =====
+\usepackage[a4paper,margin=2.4cm,headsep=14pt]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage[hidelinks]{hyperref}
+
+% ---- palette ----
+\definecolor{navy}{HTML}{1F2A44}
+\definecolor{navy2}{HTML}{2B3A5C}
+\definecolor{bronze}{HTML}{C8702D}
+\definecolor{bronzed}{HTML}{A85A1F}
+\definecolor{teal}{HTML}{2A7D8C}
+\definecolor{tealw}{HTML}{ECF4F5}
+\definecolor{ink}{HTML}{26303F}
+\definecolor{paper2}{HTML}{F3EDE1}
+\definecolor{line}{HTML}{D8D4CB}
+\definecolor{codebg}{HTML}{1C2433}
+\definecolor{good}{HTML}{3F7D5A}
+\definecolor{warn}{HTML}{B4451F}
+
+\color{ink}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\linespread{1.06}
+
+% ---- section styling ----
+\titleformat{\section}{\Large\bfseries\color{navy}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{navy2}}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{bronzed}}{}{0em}{}
+\titlespacing{\section}{0pt}{16pt}{6pt}
+\titlespacing{\subsection}{0pt}{12pt}{4pt}
+
+% ---- header / footer ----
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[L]{\footnotesize\color{navy2}\MODULETAG}
+\fancyhead[R]{\footnotesize\color{navy2}Toro Tin Project\,\textbar\,ANRML26-137}
+\fancyfoot[C]{\footnotesize\color{navy2}\thepage}
+
+% ---- callout boxes ----
+\newtcolorbox{keybox}[1][Key concept]{breakable,enhanced,
+  colback=paper2,colframe=bronze,boxrule=0pt,leftrule=4pt,
+  arc=2pt,left=10pt,right=10pt,top=8pt,bottom=8pt,
+  fonttitle=\bfseries\sffamily\small\color{bronzed},title={#1}}
+\newtcolorbox{torobox}[1][Toro application]{breakable,enhanced,
+  colback=navy!6,colframe=navy,boxrule=0pt,leftrule=4pt,
+  arc=2pt,left=10pt,right=10pt,top=8pt,bottom=8pt,
+  fonttitle=\bfseries\sffamily\small\color{navy},title={#1}}
+\newtcolorbox{pitbox}[1][Common pitfall]{breakable,enhanced,
+  colback=warn!7,colframe=warn,boxrule=0pt,leftrule=4pt,
+  arc=2pt,left=10pt,right=10pt,top=8pt,bottom=8pt,
+  fonttitle=\bfseries\sffamily\small\color{warn},title={#1}}
+\newtcolorbox{notebox}[1][Note]{breakable,enhanced,
+  colback=tealw,colframe=teal,boxrule=0pt,leftrule=4pt,
+  arc=2pt,left=10pt,right=10pt,top=8pt,bottom=8pt,
+  fonttitle=\bfseries\sffamily\small\color{teal},title={#1}}
+\newtcolorbox{defbox}[1][Definition]{breakable,enhanced,
+  colback=good!7,colframe=good,boxrule=0pt,leftrule=4pt,
+  arc=2pt,left=10pt,right=10pt,top=8pt,bottom=8pt,
+  fonttitle=\bfseries\sffamily\small\color{good},title={#1}}
+\newtcolorbox{objbox}{enhanced,colback=navy,colframe=navy,
+  arc=3pt,left=12pt,right=12pt,top=10pt,bottom=10pt,
+  coltext=white}
+
+% ---- python code ----
+\lstdefinestyle{py}{language=Python,
+  basicstyle=\footnotesize\ttfamily\color{white},
+  keywordstyle=\color{bronze},commentstyle=\color{line},
+  stringstyle=\color{teal!60!white},backgroundcolor=\color{codebg},
+  numberstyle=\tiny\color{line},showstringspaces=false,
+  breaklines=true,frame=single,framerule=0pt,
+  rulecolor=\color{codebg},xleftmargin=8pt,xrightmargin=4pt,
+  aboveskip=10pt,belowskip=6pt,framexleftmargin=8pt,
+  framexrightmargin=8pt,framextopmargin=6pt,framexbottommargin=6pt}
+\lstset{style=py}
+
+% ---- equation box ----
+\newtcolorbox{eqbox}{enhanced,colback=white,colframe=line,
+  boxrule=0.6pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+  before skip=10pt,after skip=10pt}
+
+% ---- captions ----
+\captionsetup{font={small,it},labelfont={bf,color=navy},labelsep=endash}
+
+% ---- module title macro ----
+\newcommand{\moduletitle}[3]{%
+  {\sffamily\bfseries\footnotesize\color{bronze}\MakeUppercase{#1}\par}
+  \vspace{2pt}
+  {\sffamily\bfseries\LARGE\color{navy}#2\par}
+  \vspace{3pt}
+  {\small\itshape\color{navy2}#3\par}
+  \vspace{4pt}{\color{line}\hrule height 1.5pt}\vspace{12pt}}

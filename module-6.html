@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Module 6 &middot; Reporting &amp; Capstone &mdash; Toro Resource Estimation Course</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},
+  svg:{fontCache:'global'}};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand">
+    <a href="index.html">
+      <div class="ttl">Resource Estimation &amp; Geostatistics</div>
+      <div class="sub">Toro Tin Project &middot; ANRML26-137</div>
+    </a>
+  </div>
+  <nav>
+    <div class="nav-label">Course</div>
+    <a href="index.html"><span class="mnum">&#9737;</span>Course home</a>
+    <div class="nav-label">Modules</div>
+    <a href="module-1.html"><span class="mnum">1</span>Foundations</a>
+    <a href="module-2.html"><span class="mnum">2</span>Sampling &amp; Data</a>
+    <a href="module-3.html"><span class="mnum">3</span>EDA &amp; Statistics</a>
+    <a href="module-4.html"><span class="mnum">4</span>Variography</a>
+    <a href="module-5.html"><span class="mnum">5</span>Grade Estimation</a>
+    <a href="module-6.html" class="active"><span class="mnum">6</span>Reporting &amp; Capstone</a>
+  </nav>
+  <div class="foot">A technical training course built on the live
+    ANRML26-137 / EL-046017 datasets.</div>
+</aside>
+<main class="main">
+<div class="content">
+
+<div class="eyebrow">Module 6</div>
+<h1>Block Models, Cut-off Grade and the Resource Statement</h1>
+<div class="mod-meta">
+  <span>&#9201; 55&ndash;70 min</span>
+  <span>&#9776; 9 sections</span>
+  <span>&#9881; 1 interactive tool &middot; capstone</span>
+  <span>&#10003; Prerequisite: Modules 1&ndash;5</span>
+</div>
+
+<p class="lead">A kriged grid is not yet a resource. This final module
+turns estimates into tonnes, applies the economics that decide what is
+ore, attaches a classification, and assembles the formal Resource
+statement. It closes with a capstone: the honest Toro resource picture,
+set against the Achmmach and Alphamin Bisie benchmarks.</p>
+
+<div class="objectives">
+  <h4>Learning objectives</h4>
+  <ul>
+    <li>Construct a block model and convert estimated grade and volume
+      into tonnes of ore and metal.</li>
+    <li>Apply the volume-variance relationship and explain why block
+      support matters.</li>
+    <li>Derive a breakeven cut-off grade and read a grade-tonnage
+      curve.</li>
+    <li>Assign Resource classification to a block model using the
+      kriging variance and drill spacing.</li>
+    <li>Assemble a code-compliant Mineral Resource statement.</li>
+    <li>Complete the alluvial g/m&sup3; estimate and benchmark the whole
+      Toro project.</li>
+  </ul>
+</div>
+
+<h2>6.1 The block model</h2>
+<p>A <b>block model</b> is the digital orebody: the deposit volume
+divided into a regular 3D array of rectangular blocks, each one carrying
+estimated attributes &mdash; grade of every element, density,
+classification, rock type, and the kriging variance behind each
+estimate.</p>
+
+<p>The block size is a compromise. It should be no smaller than the data
+can actually resolve &mdash; a common guide is one quarter to one half of
+the drill spacing &mdash; and it should relate sensibly to the
+<b>selective mining unit</b>, the smallest volume the mining method can
+extract as ore or waste separately. Blocks far smaller than the data
+spacing imply a precision that does not exist; blocks far larger than the
+mining unit hide ore-waste detail the mine could actually exploit. Where
+an orebody boundary cuts through blocks, <b>sub-blocking</b> splits the
+edge blocks so the model honours the geological volume without inflating
+the whole array.</p>
+
+<div class="callout key">
+  <div class="ttl">Estimate into blocks, never the reverse</div>
+  <p>The workflow is strict and one-directional: define domains
+  (Module 3), model the variogram of each domain (Module 4), then block
+  krige each domain into its blocks (Module 5). Each block's grade is
+  estimated <em>only</em> from samples in its own domain. The block model
+  is the meeting point of every earlier module &mdash; and it inherits
+  every earlier decision, sound or unsound.</p>
+</div>
+
+<h2>6.2 From blocks to tonnes</h2>
+<p>Grade alone is not a resource; tonnage is half the answer. Each block
+converts to tonnes through its volume and its bulk density &mdash; the
+quantity Module 2 insisted you measure rather than assume:</p>
+
+<div class="eq">
+  <span class="eqnum">(6.1)</span>
+  \[ T_{\text{block}}=V_{\text{block}}\times\rho,
+     \qquad
+     M_{\text{block}}=T_{\text{block}}\times\frac{g}{100} \]
+  <div class="eqlabel">Tonnes from volume and density; tonnes of metal
+  from tonnes of ore and grade g in per cent. Sum over all blocks above
+  cut-off for the deposit total.</div>
+</div>
+
+<h3>The volume-variance relationship</h3>
+<p>Module 3 noted that averaging reduces variance. The
+<b>volume-variance relationship</b> makes that quantitative and it
+governs the whole block model. The <em>dispersion variance</em>
+\(D^2(v|D)\) &mdash; the variance of the grades of volumes \(v\) within a
+deposit \(D\) &mdash; shrinks as \(v\) grows. Krige's relationship states
+that dispersion variances are additive across nested supports:</p>
+
+<div class="eq">
+  <span class="eqnum">(6.2)</span>
+  \[ D^{2}(v\,|\,D)\;=\;D^{2}(v\,|\,G)\;+\;D^{2}(G\,|\,D) \]
+  <div class="eqlabel">The variance of small blocks v within the deposit
+  equals their variance within a panel G plus the variance of panels
+  within the deposit. Variance partitions cleanly across scales.</div>
+</div>
+
+<p>This is not abstract. Selective mining units have a wider grade
+distribution than large panels; a model built on the wrong support will
+mis-state how much ore sits above cut-off. It is also the formal reason
+kriging smooths (Module 5): a kriged block model reproduces panel-scale
+variance but cannot, by construction, reproduce the full block-scale
+variance &mdash; which is the gap that conditional simulation (section
+6.6) was created to fill.</p>
+
+<figure>
+  <img src="assets/figures/fig_blockmodel.png" alt="Toro block model">
+  <figcaption><b>Figure 6.1</b> &mdash; A demonstration block model of
+  the Toro kriged surface, 60 m cells, showing the blocks that survive a
+  2% SnO&#8322; cut-off. Greyed cells fall below cut-off. This is the
+  machinery of a resource &mdash; though, as section 6.8 stresses, a
+  defensible alluvial figure must run on g/m&sup3;, not concentrate
+  grade.</figcaption>
+</figure>
+
+<h2>6.3 Cut-off grade: the line between ore and waste</h2>
+<p>Not every block in the model is ore. The <b>cut-off grade</b> is the
+grade that divides material worth processing from material that is not.
+It is the single most powerful number in a resource statement, and it is
+fundamentally an <em>economic</em> quantity, not a geological one.</p>
+
+<p>The simplest and most important form is the <b>breakeven (marginal)
+cut-off</b>: the grade at which the revenue from treating a tonne as ore
+exactly covers the cost of doing so. A tonne of ore at grade \(g\) per
+cent contains \(g/100\) tonnes of metal; selling it earns the metal price
+\(P\) reduced by the metallurgical recovery \(R\) and the payable
+fraction. Setting that revenue equal to the processing cost \(C\) per
+tonne:</p>
+
+<div class="eq">
+  <span class="eqnum">(6.3)</span>
+  \[ \frac{g_c}{100}\times P\times R \;=\; C
+     \qquad\Longrightarrow\qquad
+     g_c \;=\; \frac{100\,C}{P\times R} \]
+  <div class="eqlabel">Breakeven cut-off grade. Lower costs, higher
+  price or better recovery all push the cut-off down and convert more
+  rock into ore - and vice versa.</div>
+</div>
+
+<p>Equation (6.3) shows why a Resource is always reported <em>at a stated
+cut-off</em>, and why that cut-off must rest on realistic, disclosed
+assumptions. A cut-off chosen on an optimistic tin price manufactures
+ore that vanishes when the price reverts. The cut-off also depends on
+which costs are counted: a <em>marginal</em> cut-off (processing only,
+for material already going to be moved) is lower than a <em>breakeven</em>
+cut-off that must also carry mining and overhead. Mineral Resource
+reporting uses a reasonable long-term price and a cut-off consistent with
+the RPEEE test of Module 1.</p>
+
+<h3>The grade-tonnage curve</h3>
+<p>Sweep the cut-off across its plausible range and plot two quantities:
+the tonnage that survives above cut-off, and the mean grade of that
+surviving tonnage. The result &mdash; the <b>grade-tonnage curve</b>
+&mdash; is the single most informative graphic a resource geologist
+produces.</p>
+
+<figure>
+  <img src="assets/figures/fig_gradetonnage.png" alt="Grade-tonnage curve">
+  <figcaption><b>Figure 6.2</b> &mdash; The grade-tonnage relationship of
+  the Toro demonstration block model. As the cut-off rises the tonnage
+  (teal) falls and the mean grade above cut-off (bronze) rises. The two
+  curves moving in opposite directions <em>is</em> the central trade-off
+  of mine planning.</figcaption>
+</figure>
+
+<div class="widget" id="gt-widget"></div>
+
+<p>Move the cut-off in the tool and watch tonnes trade against grade and
+against contained metal. Notice that contained metal &mdash; the product
+of the two &mdash; usually peaks at a low cut-off and then falls: pushing
+the cut-off up to chase a headline grade throws away real metal. The
+"right" cut-off is the one that maximises project value, not grade. The
+shape of this curve also exposes the smoothing of Module 5: a kriged
+model gives a flatter, more forgiving grade-tonnage curve than reality,
+which is why heavily smoothed estimates over-promise tonnes at high
+cut-off.</p>
+
+<h2>6.4 Classification in practice</h2>
+<p>Module 1 defined the Inferred, Indicated and Measured categories.
+Here we assign them to actual blocks. The Competent Person makes the
+call, but it is supported by quantitative evidence, and the kriging
+variance of Module 5 is central to it.</p>
+
+<div class="tablewrap">
+<table class="data">
+  <tr><th>Evidence</th><th>How it informs classification</th></tr>
+  <tr><td>Drill / pit spacing</td><td>The primary driver. Tighter
+    spacing relative to the variogram range supports a higher
+    category.</td></tr>
+  <tr><td>Kriging variance / standard error</td><td>A direct,
+    block-by-block confidence map (Figure 5.3). Low-error blocks are
+    candidates for Indicated or Measured; high-error blocks stay
+    Inferred.</td></tr>
+  <tr><td>Number and configuration of informing samples</td><td>Blocks
+    estimated from many well-distributed samples rank above blocks
+    estimated from one or two on one side.</td></tr>
+  <tr><td>Conditional simulation</td><td>Used to test, for example,
+    whether grade in a production-sized volume is known to within
+    &plusmn;15% at 90% confidence &mdash; an increasingly standard
+    criterion.</td></tr>
+  <tr><td>Geological continuity and QAQC</td><td>Confident geology and a
+    clean QAQC record are preconditions for any category above
+    Inferred.</td></tr>
+</table>
+</div>
+
+<div class="callout pitfall">
+  <div class="ttl">The spotted-dog problem</div>
+  <p>Classifying purely on a raw kriging-variance threshold scatters
+  isolated Measured blocks through an Indicated background &mdash; a
+  "spotted dog" pattern that is geologically absurd and unmineable: you
+  cannot plan a mine around single high-confidence blocks. Classification
+  must produce <em>coherent, contiguous volumes</em>. In practice the
+  CP defines confidence as broad regions &mdash; commonly via drill-spacing
+  criteria validated by conditional simulation &mdash; not block by
+  isolated block.</p>
+</div>
+
+<h2>6.5 The Mineral Resource statement</h2>
+<p>The estimate culminates in a single, formal table: the Mineral
+Resource statement. Its structure is dictated by the codes of Module 1,
+and every cell carries accountability.</p>
+
+<div class="tablewrap">
+<table class="data">
+  <tr><th>Classification</th><th>Tonnes</th><th>Grade</th>
+      <th>Contained metal</th></tr>
+  <tr><td>Measured</td><td>by domain</td><td>% Sn or g/m&sup3;</td>
+      <td>tonnes Sn</td></tr>
+  <tr><td>Indicated</td><td>by domain</td><td>&hellip;</td><td>&hellip;</td></tr>
+  <tr><td><b>Measured + Indicated</b></td><td><b>subtotal</b></td>
+      <td><b>&hellip;</b></td><td><b>&hellip;</b></td></tr>
+  <tr><td>Inferred</td><td>reported separately</td><td>&hellip;</td>
+      <td>&hellip;</td></tr>
+</table>
+<caption>The skeleton of a Resource statement. Measured and Indicated
+are subtotalled because only they can feed a Reserve; Inferred is always
+kept separate and never added in.</caption>
+</div>
+
+<p>The table never travels alone. It must be accompanied by: the
+<b>effective date</b>; the <b>cut-off grade</b> and the price, recovery
+and cost assumptions behind it; a statement of the RPEEE basis (the
+mining envelope); the name and sign-off of the <b>Competent or Qualified
+Person</b>; and, under JORC, the completed <b>Table 1</b> documenting
+sampling, QAQC, estimation and classification on an if-not-why-not basis.
+A number without this apparatus is not a Resource &mdash; it is an
+assertion.</p>
+
+<div class="callout key">
+  <div class="ttl">Rounding is a disclosure</div>
+  <p>Report tonnes and grade to a precision that reflects their real
+  confidence. An Inferred Resource quoted as "5,234,718 t at 1.07% Sn"
+  is dishonest: the false precision contradicts the category. "5.2 Mt at
+  1.1% Sn" tells the truth about what is known. Significant figures are
+  part of the estimate.</p>
+</div>
+
+<h2>6.6 Conditional simulation</h2>
+<p>Kriging gives the single best estimate of each block &mdash; and, by
+the smoothing property of Module 5, deliberately understates how much
+block grades really vary. For questions that depend on that variability
+&mdash; how often a mining bench will breach a cut-off, the true risk
+around a tonnage figure, how to classify by a confidence criterion
+&mdash; a different tool is needed.</p>
+
+<p><b>Conditional simulation</b> generates many alternative block models
+&mdash; <em>realisations</em> &mdash; each of which honours the data at
+the sample points, and each of which reproduces the real histogram and
+the real variogram. No single realisation is "the" answer; the
+<em>spread across</em> realisations is the answer. It is a direct,
+honest map of uncertainty.</p>
+
+<div class="callout note">
+  <div class="ttl">Estimation versus simulation</div>
+  <p>Use <b>kriging</b> when you want the best single estimate of grade
+  &mdash; the resource block model itself. Use <b>conditional
+  simulation</b> when you want the <em>uncertainty</em> &mdash; risk
+  analysis, classification criteria, grade-control decision-making, and
+  realistic recoverable-resource prediction. They are complementary, not
+  competing: a modern resource study runs both.</p>
+</div>
+
+<h2>6.7 Reconciliation and the path to a Reserve</h2>
+<p>An estimate is a prediction, and a prediction must eventually be
+checked against reality. <b>Reconciliation</b> compares the resource
+model, the grade-control model and what the processing plant actually
+received &mdash; tonnes, grade and metal &mdash; usually expressed as
+mine-call factors. Persistent divergence sends you back through this
+course: a reconciliation problem is almost always a sampling, density,
+domaining or top-cut problem in disguise.</p>
+
+<p>Beyond the Resource lies the Reserve. The Measured and Indicated
+blocks are passed into engineering studies &mdash; Scoping, then
+Pre-Feasibility, then Feasibility &mdash; which apply the modifying
+factors of Module 1 (mining method, dilution, recovery, costs, permits,
+markets). The economically mineable output of at least a Pre-Feasibility
+Study is the Ore Reserve. That is the journey Achmmach completed to
+publish 7.0 Mt at 0.82% Sn of Proven and Probable Reserve.</p>
+
+<h2>6.8 Completing the alluvial estimate</h2>
+<p>The block-model machinery above was demonstrated on the kriged
+concentrate grade. But Module 2 was emphatic: a defensible
+<em>alluvial</em> resource is a volume-grade quantity in g/m&sup3;, and
+the XRF assay supplies only one factor in that chain. Here we complete
+the chain with the Toro field data, using equation (2.4):</p>
+
+<div class="eq">
+  <span class="eqnum">(6.4)</span>
+  \[ g_{\,\mathrm{Sn}}\;\left[\tfrac{\text{g}}{\text{m}^3}\right]
+     =\frac{M_{\text{HMC}}}{M_{\text{bulk}}}\times a_{\text{Sn}}
+     \times\rho_{\text{gravel}}\times 10^{6} \]
+</div>
+
+<p>The field logs record the heavy-mineral-concentrate mass recovered
+from each 200 kg bulk sample of wash gravel. Combining those yields with
+the mean Sn grade of the concentrate (about 1.8% Sn) and an assumed
+in-situ gravel density of 1.9 t/m&sup3;:</p>
+
+<div class="tablewrap">
+<table class="data">
+  <tr><th>Bulk sample</th><th>HMC yield</th><th>In-situ Sn (g/m&sup3;)</th></tr>
+  <tr><td>Mining Pit (point 2)</td><td class="num">1.00%</td>
+    <td class="num">339</td></tr>
+  <tr><td>River Bishwai (point 13)</td><td class="num">1.00%</td>
+    <td class="num">339</td></tr>
+  <tr><td>Kadade (point 11)</td><td class="num">0.50%</td>
+    <td class="num">169</td></tr>
+  <tr><td>Kadade (point 16)</td><td class="num">0.50%</td>
+    <td class="num">169</td></tr>
+  <tr><td>GN-005</td><td class="num">0.18%</td><td class="num">59</td></tr>
+</table>
+<caption>The Toro alluvial grade chain. Mean &asymp; 215 g/m&sup3; Sn,
+range 59&ndash;339 &mdash; an order-of-magnitude span from just five
+samples.</caption>
+</div>
+
+<figure>
+  <img src="assets/figures/fig_alluvial.png" alt="Alluvial grade chain">
+  <figcaption><b>Figure 6.3</b> &mdash; In-situ Sn grade reconstructed
+  for five Toro bulk samples. The values are encouraging for an alluvial
+  tin project &mdash; but every bar is a product of four separately
+  measured, separately uncertain factors.</figcaption>
+</figure>
+
+<div class="callout pitfall">
+  <div class="ttl">Why the alluvial number is fragile</div>
+  <p>Equation (6.4) is a <em>product</em>, so the relative errors of its
+  factors add: a 20% error in yield, 15% in concentrate grade and 10% in
+  density compound to roughly a 27% error in g/m&sup3;. The 215 g/m&sup3;
+  mean rests on only five bulk samples, an <em>assumed</em> density that
+  has never been measured at Toro, and a yield read from field washing
+  that had no QAQC. This is the quantitative reason the pitting programme
+  must deliver, for every pit: a weighed bulk sample of measured volume,
+  a measured in-situ density, and a logged wash-layer thickness. Without
+  those, the alluvial estimate cannot rise above an Exploration
+  Target.</p>
+</div>
+
+<h2>6.9 Capstone: the Toro resource picture</h2>
+<p>Bring the whole course to bear on one honest question: <em>where does
+the Toro tin project actually stand, and what must happen next?</em></p>
+
+<div class="callout toro">
+  <div class="ttl">Toro, assessed against this course</div>
+  <p><b>Status.</b> Two distinct Exploration Targets &mdash; an alluvial
+  placer across the Bishiwai, Yadabongo and Kadade drainages, and a
+  primary greisen-pegmatite target on the LV 029 cupola. Neither is a
+  Mineral Resource, and the reasons are now precise rather than
+  vague.</p>
+  <p><b>Why not yet a Resource.</b> The grade data resolve to 26 pit
+  locations (Module 2). The variogram has a relative nugget of 0.55
+  &mdash; over half the variance unstructured (Module 4). Cross-validation
+  returns a correlation of 0.24: unbiased but imprecise (Module 5). The
+  alluvial g/m&sup3; figure rests on five bulk samples and an unmeasured
+  density (Module 6). Every one of these is a data-density or
+  data-quality limit, and together they place Toro firmly, correctly, at
+  Exploration Target.</p>
+  <p><b>What the data do support.</b> A real, encouraging signal: a
+  structured grade continuity of roughly 1 km, concentrate grades
+  averaging 2.3% SnO&#8322;, a reconstructed alluvial grade near
+  215 g/m&sup3; Sn, and a coherent higher-grade core through
+  Bishiwai-Yadabongo. Enough to justify the next tranche of capital
+  &mdash; which is exactly what an Exploration Target is for.</p>
+</div>
+
+<h3>Benchmarking the destination</h3>
+<p>Module 1 introduced the benchmarks; now read them as a resource
+geologist. <b>Achmmach</b> reached 22.4 Mt at 0.70% Sn of Measured and
+Indicated Resource after roughly 18 years and systematic drilling.
+<b>Alphamin Bisie</b> is among the highest-grade tin mines on Earth,
+its resource an order of magnitude richer in grade. Toro's primary
+target has no classified grade at all yet. The benchmarks are not
+discouragement &mdash; they are a specification. They show the
+<em>level of data, rigour and documentation</em> a tin Resource must
+reach, and this course is the method for reaching it.</p>
+
+<h3>The path from Exploration Target to Mineral Resource</h3>
+<div class="tablewrap">
+<table class="data">
+  <tr><th>Action</th><th>Module</th><th>What it changes</th></tr>
+  <tr><td>Drill the 13 priority collars; systematic infill pitting on a
+    defined grid</td><td>2, 5</td><td>Raises data density so grade
+    continuity can be assumed, not implied</td></tr>
+  <tr><td>Run a designed QAQC stream &mdash; standards, blanks, blind
+    duplicates &mdash; from the first sample</td><td>2</td>
+    <td>Lowers the nugget; makes the database certifiable</td></tr>
+  <tr><td>Measure in-situ bulk density by domain and weathering
+    state</td><td>2, 6</td><td>Removes the largest assumption in the
+    tonnage and the g/m&sup3; chain</td></tr>
+  <tr><td>Record wash-layer thickness and bulk-sample volume on every
+    pit</td><td>3, 6</td><td>Enables correct length-weighted compositing
+    and a true g/m&sup3; estimate</td></tr>
+  <tr><td>Re-fit variograms per domain; block krige; classify with
+    QKNA and simulation</td><td>4, 5, 6</td><td>Converts an Exploration
+    Target into a classified Mineral Resource</td></tr>
+  <tr><td>Sign-off by a Competent Person and a code-compliant
+    report</td><td>1, 6</td><td>Makes the Resource public and
+    bankable</td></tr>
+</table>
+</div>
+
+<div class="quiz">
+  <div class="q">Capstone check: Toro's grade-tonnage curve shows that
+  raising the cut-off from 1.5% to 3.0% SnO&#8322; lifts the mean grade
+  but cuts contained metal by 40%. A director wants the higher cut-off
+  "because the grade looks better". What is the sound response?</div>
+  <div class="opt" data-correct="0">Agree &mdash; a higher reported grade
+  attracts investors.</div>
+  <div class="opt" data-correct="1">The cut-off should be set by project
+  economics via equation (6.3), not chosen to flatter the headline grade;
+  a cut-off that discards 40% of the metal likely destroys project
+  value.</div>
+  <div class="opt" data-correct="0">Raise the cut-off but keep reporting
+  the low-cut-off tonnage.</div>
+  <div class="opt" data-correct="0">Cut-off grade is arbitrary, so either
+  choice is fine.</div>
+  <div class="explain">Cut-off grade is an economic quantity, fixed by
+  costs, price and recovery through the breakeven relation (6.3) and the
+  RPEEE test. Choosing it to manage the appearance of the grade is the
+  opposite of the codes' transparency principle. Contained metal usually
+  peaks at a low cut-off; sacrificing 40% of it to raise the headline
+  grade almost certainly lowers net project value and would mislead
+  investors &mdash; a materiality failure.</div>
+</div>
+
+<hr>
+
+<h2>Course conclusion: the workflow as one chain</h2>
+<p>You have now travelled the full method. Step back and see it whole
+&mdash; six modules, one unbroken chain of reasoning, every link
+carrying the integrity of the link before it.</p>
+
+<div class="callout key">
+  <div class="ttl">The resource estimation workflow</div>
+  <p><b>1. Foundations</b> &mdash; know what you are producing, under
+  which code, and who is accountable. <b>2. Sampling and data</b> &mdash;
+  collect representative samples, control the error, certify the
+  database. <b>3. EDA and statistics</b> &mdash; understand the
+  distribution and, decisively, define the stationary domains.
+  <b>4. Variography</b> &mdash; measure and model the spatial continuity
+  of grade. <b>5. Estimation</b> &mdash; krige the best linear unbiased
+  estimate, and obtain its quantified uncertainty. <b>6. Reporting</b>
+  &mdash; turn estimates into classified tonnes and metal, and report
+  them honestly. Each module is necessary; none is sufficient alone.</p>
+</div>
+
+<p>And hold on to the deeper lesson, the one the Toro data taught more
+forcefully than any clean textbook dataset could. Resource estimation is
+not the manufacture of a single confident number. It is the disciplined,
+quantified, defensible <em>statement of what is known and how well it is
+known</em> &mdash; including, when the data demand it, the honest verdict
+that the answer is "not yet, and here is precisely why." A geologist who
+can deliver that verdict with the rigour of this course, and chart the
+path beyond it, is doing resource estimation at the highest level. That
+is the standard the Toro tin project &mdash; and you &mdash; are being
+built to meet.</p>
+
+<div class="pagenav">
+  <a href="module-5.html"><div class="dir">&larr; Previous</div>
+    <div class="ttl">Module 5 &middot; Grade Estimation</div></a>
+  <a class="next" href="index.html"><div class="dir">Finish &rarr;</div>
+    <div class="ttl">Return to course home</div></a>
+</div>
+
+</div>
+</main>
+</div>
+<script src="assets/course.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>

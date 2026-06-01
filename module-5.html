@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Module 5 &middot; Grade Estimation &mdash; Toro Resource Estimation Course</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},
+  svg:{fontCache:'global'}};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" async></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand">
+    <a href="index.html">
+      <div class="ttl">Resource Estimation &amp; Geostatistics</div>
+      <div class="sub">Toro Tin Project &middot; ANRML26-137</div>
+    </a>
+  </div>
+  <nav>
+    <div class="nav-label">Course</div>
+    <a href="index.html"><span class="mnum">&#9737;</span>Course home</a>
+    <div class="nav-label">Modules</div>
+    <a href="module-1.html"><span class="mnum">1</span>Foundations</a>
+    <a href="module-2.html"><span class="mnum">2</span>Sampling &amp; Data</a>
+    <a href="module-3.html"><span class="mnum">3</span>EDA &amp; Statistics</a>
+    <a href="module-4.html"><span class="mnum">4</span>Variography</a>
+    <a href="module-5.html" class="active"><span class="mnum">5</span>Grade Estimation</a>
+    <a href="module-6.html"><span class="mnum">6</span>Reporting &amp; Capstone</a>
+  </nav>
+  <div class="foot">A technical training course built on the live
+    ANRML26-137 / EL-046017 datasets.</div>
+</aside>
+<main class="main">
+<div class="content">
+
+<div class="eyebrow">Module 5</div>
+<h1>Grade Estimation: From Inverse Distance to Kriging</h1>
+<div class="mod-meta">
+  <span>&#9201; 60&ndash;75 min</span>
+  <span>&#9776; 9 sections</span>
+  <span>&#9881; 1 interactive tool</span>
+  <span>&#10003; Prerequisite: Modules 1&ndash;4</span>
+</div>
+
+<p class="lead">Everything so far has been preparation. Now we estimate
+grade at the places we did not sample. We build up from the classical
+estimators, derive the ordinary kriging system in full from its two
+defining requirements, and then run it on the Toro data &mdash; honestly
+reporting what 26 pits can and cannot deliver.</p>
+
+<div class="objectives">
+  <h4>Learning objectives</h4>
+  <ul>
+    <li>Write any linear estimator as a weighted sum of samples and state
+      what makes one set of weights better than another.</li>
+    <li>Apply and critique the polygonal and inverse-distance
+      estimators.</li>
+    <li>Derive the ordinary kriging system from unbiasedness and
+      minimum variance, using a Lagrange multiplier.</li>
+    <li>Interpret the kriging variance and the key properties of kriging:
+      exactness, smoothing, the screen effect and negative weights.</li>
+    <li>Distinguish point and block kriging and know the main kriging
+      variants.</li>
+    <li>Validate an estimate by cross-validation and swath analysis, and
+      apply all of this to the Toro data.</li>
+  </ul>
+</div>
+
+<h2>5.1 The estimation problem</h2>
+<p>We have grade at \(n\) sampled locations. We want grade at a location
+&mdash; or, more usefully, an ore block &mdash; where we did not sample.
+Every method in practical use answers this as a <b>weighted linear
+combination</b> of the surrounding samples:</p>
+
+<div class="eq">
+  <span class="eqnum">(5.1)</span>
+  \[ Z^{*}(\mathbf{x}_0) \;=\; \sum_{i=1}^{n}\lambda_i\,Z(\mathbf{x}_i) \]
+  <div class="eqlabel">The estimate at x-zero is a weighted sum of the n
+  surrounding sample grades. Every estimator in this module differs only
+  in how it sets the weights lambda-i.</div>
+</div>
+
+<p>That is the whole game. Polygonal estimation, inverse distance and
+kriging are three different rules for choosing the weights \(\lambda_i\).
+The question this module answers is: what makes one rule better than
+another &mdash; and what is the <em>best possible</em> rule?</p>
+
+<h2>5.2 The classical estimators</h2>
+<h3>Polygonal / nearest-neighbour</h3>
+<p>The simplest rule: give the single nearest sample a weight of 1 and
+every other sample a weight of 0. Each estimated point takes the grade of
+whichever sample is closest, which carves the deposit into polygons of
+influence (Voronoi polygons), one per sample.</p>
+
+<p>It is transparent and it honours the data, but it is a step function:
+grade jumps discontinuously at every polygon boundary, no sample beyond
+the nearest contributes, and &mdash; fatally &mdash; it offers
+<em>no measure of uncertainty</em>. It is useful today mainly as a
+validation reference, because its global mean is a simple,
+declustering-free benchmark.</p>
+
+<h3>Inverse distance weighting</h3>
+<p>A smoother idea: weight each sample by the inverse of its distance to
+the target, raised to a power \(p\):</p>
+
+<div class="eq">
+  <span class="eqnum">(5.2)</span>
+  \[ Z^{*}(\mathbf{x}_0)=\frac{\displaystyle\sum_{i=1}^{n}
+     d_i^{-p}\,Z(\mathbf{x}_i)}
+     {\displaystyle\sum_{i=1}^{n} d_i^{-p}},
+     \qquad d_i=\lVert\mathbf{x}_i-\mathbf{x}_0\rVert \]
+  <div class="eqlabel">Division by the sum of weights makes the weights
+  sum to one, which guarantees unbiasedness. The power p tunes how
+  quickly influence falls off with distance.</div>
+</div>
+
+<p>The power \(p\) is the control. With \(p=0\) every sample is weighted
+equally and the estimate is the plain mean. As \(p\) rises, near samples
+dominate; as \(p\to\infty\) IDW converges on the nearest-neighbour
+estimator. \(p=2\) is the conventional default.</p>
+
+<div class="callout pitfall">
+  <div class="ttl">What inverse distance cannot do</div>
+  <p>IDW has three deep limitations, and all three are exactly what
+  kriging was invented to fix. <b>One:</b> the power \(p\) is arbitrary
+  &mdash; chosen by habit, not derived from the deposit. <b>Two:</b> it
+  uses only <em>distance</em>, and is blind to the actual spatial
+  continuity measured by the variogram &mdash; an IDW estimate is
+  identical whether the grade has a 200 m range or a 2 km range.
+  <b>Three:</b> it ignores <em>data clustering</em> &mdash; three
+  samples bunched on one side of the target collectively out-vote one
+  lone sample on the other side, even though they carry largely the same
+  information. And like the polygonal method, it returns no uncertainty.</p>
+</div>
+
+<figure>
+  <img src="assets/figures/fig_idw.png" alt="Toro IDW estimate">
+  <figcaption><b>Figure 5.1</b> &mdash; Inverse-distance (power 2)
+  estimate of Toro SnO&#8322;. It produces a plausible-looking grade
+  surface &mdash; but it cannot tell you how much to trust any part of
+  it, and it never consulted the variogram of Module 4.</figcaption>
+</figure>
+
+<h2>5.3 What makes an estimator optimal</h2>
+<p>Kriging &mdash; named by Matheron for the South African mining
+engineer Danie Krige &mdash; chooses the weights \(\lambda_i\) not by
+convention but by solving an optimisation problem. It demands two things
+of the estimate, and they are the two clauses of Module 1's central
+question made into mathematics.</p>
+
+<p>Define the <b>estimation error</b> at the target as</p>
+
+<div class="eq">
+  <span class="eqnum">(5.3)</span>
+  \[ R(\mathbf{x}_0)\;=\;Z^{*}(\mathbf{x}_0)-Z(\mathbf{x}_0) \]
+</div>
+
+<p><b>Requirement 1 &mdash; unbiasedness.</b> On average, over the random
+function model, the error must be zero: \(\mathbb{E}[R]=0\). The estimate
+neither systematically over- nor under-states grade.</p>
+
+<p><b>Requirement 2 &mdash; minimum variance.</b> Among all estimators
+that satisfy requirement 1, choose the one whose error has the smallest
+variance: minimise \(\operatorname{Var}[R]\). This is the estimation
+variance &mdash; the spread of the error.</p>
+
+<div class="callout key">
+  <div class="ttl">Kriging is the BLUE</div>
+  <p>An estimator that is a linear combination of the data (5.1),
+  is unbiased, and has the minimum error variance achievable, is the
+  <b>Best Linear Unbiased Estimator</b> &mdash; the BLUE. Kriging
+  <em>is</em> the BLUE for a regionalised variable. "Best" is not a
+  marketing word here: it is the provable outcome of the optimisation
+  derived below.</p>
+</div>
+
+<h2>5.4 Deriving the ordinary kriging system</h2>
+<p>Ordinary kriging (OK) is the form used when the mean \(m\) is constant
+but <em>unknown</em> &mdash; the normal situation in a mine. We now turn
+the two requirements into equations. The derivation is the intellectual
+centre of the course; follow every line.</p>
+
+<h4>Step 1 &mdash; the unbiasedness condition</h4>
+<p>Take the expectation of the error (5.3), using the constant-mean
+assumption \(\mathbb{E}[Z(\mathbf{x}_i)]=m\) for all \(i\):</p>
+
+<div class="eq">
+  \[ \mathbb{E}[R]=\mathbb{E}\!\left[\sum_i\lambda_i Z(\mathbf{x}_i)
+     -Z(\mathbf{x}_0)\right]
+     =m\sum_i\lambda_i-m=m\left(\sum_i\lambda_i-1\right) \]
+</div>
+
+<p>This vanishes for an <em>unknown</em> \(m\) only if the weights sum to
+one. That is the <b>ordinary kriging constraint</b>:</p>
+
+<div class="eq">
+  <span class="eqnum">(5.4)</span>
+  \[ \sum_{i=1}^{n}\lambda_i \;=\; 1 \]
+</div>
+
+<h4>Step 2 &mdash; the estimation variance</h4>
+<p>Writing the error variance in terms of the covariance function
+\(C(\mathbf{h})\) and expanding the linear combination:</p>
+
+<div class="eq">
+  <span class="eqnum">(5.5)</span>
+  \[ \sigma_E^{2}=\operatorname{Var}[R]=
+     \sum_{i=1}^{n}\sum_{j=1}^{n}\lambda_i\lambda_j\,C(\mathbf{x}_i,\mathbf{x}_j)
+     \;-\;2\sum_{i=1}^{n}\lambda_i\,C(\mathbf{x}_i,\mathbf{x}_0)
+     \;+\;C(\mathbf{x}_0,\mathbf{x}_0) \]
+  <div class="eqlabel">First term: redundancy among the samples. Middle
+  term: closeness of the samples to the target. Last term: the variance
+  of the target itself.</div>
+</div>
+
+<p>Read equation (5.5) before pushing on, because it already contains the
+intelligence of kriging. To make \(\sigma_E^2\) small you want the middle
+term large &mdash; samples close to the target &mdash; but you are
+penalised by the first term when the chosen samples are close
+<em>to each other</em>, because then \(C(\mathbf{x}_i,\mathbf{x}_j)\) is
+large and they are redundant. Kriging will therefore reward proximity and
+punish clustering, automatically. IDW could never do this.</p>
+
+<h4>Step 3 &mdash; constrained minimisation by Lagrange multiplier</h4>
+<p>We must minimise \(\sigma_E^2\) (5.5) subject to the constraint (5.4).
+This is a constrained optimisation, solved with a <b>Lagrange
+multiplier</b> \(\mu\). Form the Lagrangian &mdash; the factor of 2 is
+cosmetic, chosen so the final system is clean:</p>
+
+<div class="eq">
+  <span class="eqnum">(5.6)</span>
+  \[ L(\lambda_1,\dots,\lambda_n,\mu)=\sigma_E^{2}
+     -2\mu\left(\sum_{i=1}^{n}\lambda_i-1\right) \]
+</div>
+
+<p>At the minimum, every partial derivative of \(L\) is zero.
+Differentiating with respect to each weight \(\lambda_i\):</p>
+
+<div class="eq">
+  \[ \frac{\partial L}{\partial\lambda_i}
+     =2\sum_{j=1}^{n}\lambda_j\,C(\mathbf{x}_i,\mathbf{x}_j)
+     -2\,C(\mathbf{x}_i,\mathbf{x}_0)-2\mu=0 \]
+</div>
+
+<p>and differentiating with respect to \(\mu\) simply returns the
+constraint (5.4). Dividing through by 2 gives the result.</p>
+
+<div class="callout key">
+  <div class="ttl">The ordinary kriging system (covariance form)</div>
+  \[ \sum_{j=1}^{n}\lambda_j\,C(\mathbf{x}_i,\mathbf{x}_j)-\mu
+     =C(\mathbf{x}_i,\mathbf{x}_0),\qquad i=1,\dots,n \]
+  \[ \sum_{j=1}^{n}\lambda_j=1 \]
+  <p>This is \(n+1\) linear equations in \(n+1\) unknowns &mdash; the
+  \(n\) weights and the multiplier \(\mu\). Solve it and you have the
+  optimal weights.</p>
+</div>
+
+<p>In practice the system is written with the <b>variogram</b> rather
+than the covariance, because the variogram is what we modelled in
+Module 4. Substituting \(C(\mathbf{h})=C(0)-\gamma(\mathbf{h})\) and
+using the constraint, the system becomes:</p>
+
+<div class="eq">
+  <span class="eqnum">(5.7)</span>
+  \[ \sum_{j=1}^{n}\lambda_j\,\gamma(\mathbf{x}_i,\mathbf{x}_j)+\mu
+     =\gamma(\mathbf{x}_i,\mathbf{x}_0),\qquad
+     \sum_{j=1}^{n}\lambda_j=1 \]
+</div>
+
+<h4>Step 4 &mdash; the kriging variance</h4>
+<p>Substituting the solved weights back into the estimation variance
+collapses (5.5) to a remarkably compact result &mdash; the
+<b>ordinary kriging variance</b>:</p>
+
+<div class="eq">
+  <span class="eqnum">(5.8)</span>
+  \[ \sigma_{OK}^{2}
+     =\sum_{i=1}^{n}\lambda_i\,\gamma(\mathbf{x}_i,\mathbf{x}_0)+\mu \]
+  <div class="eqlabel">A single number per estimated point: the variance
+  of the estimation error, and therefore the basis of every confidence
+  statement and every classification decision.</div>
+</div>
+
+<p>Equation (5.8) is what separates kriging from every classical method.
+It delivers, for free, alongside each estimate, a quantified uncertainty
+&mdash; the third clause of Module 1's central question, finally
+answered with mathematics.</p>
+
+<h2>5.5 The kriging system in matrix form</h2>
+<p>For computation the system (5.7) is assembled as a single matrix
+equation. With \(\Gamma_{ij}=\gamma(\mathbf{x}_i,\mathbf{x}_j)\) the
+sample-to-sample variogram matrix and
+\(\gamma_{i0}=\gamma(\mathbf{x}_i,\mathbf{x}_0)\) the
+sample-to-target vector:</p>
+
+<div class="eq">
+  <span class="eqnum">(5.9)</span>
+  \[ \underbrace{\begin{bmatrix}
+     \Gamma_{11}&\cdots&\Gamma_{1n}&1\\
+     \vdots&\ddots&\vdots&\vdots\\
+     \Gamma_{n1}&\cdots&\Gamma_{nn}&1\\
+     1&\cdots&1&0\end{bmatrix}}_{\mathbf{A}}
+     \underbrace{\begin{bmatrix}\lambda_1\\\vdots\\\lambda_n\\\mu
+     \end{bmatrix}}_{\boldsymbol{\lambda}}
+     =\underbrace{\begin{bmatrix}\gamma_{10}\\\vdots\\\gamma_{n0}\\1
+     \end{bmatrix}}_{\mathbf{b}} \]
+</div>
+
+<p>The solution is \(\boldsymbol{\lambda}=\mathbf{A}^{-1}\mathbf{b}\). The
+left matrix \(\mathbf{A}\) depends only on the data geometry, so it is
+built once; only the right vector \(\mathbf{b}\) changes from one
+estimated point to the next. The bordering row and column of ones, and
+the multiplier \(\mu\), are the constraint (5.4) woven into the linear
+algebra. This matrix is exactly what the course Python code assembles
+&mdash; line for line.</p>
+
+<div class="codeblock"><div class="code-head"><span class="lang">Python</span>
+  <span>the ordinary kriging system, equation (5.9) in code</span></div>
+<pre><code class="language-python">import numpy as np
+from scipy.spatial.distance import cdist
+
+def build_kriging_matrix(xc, yc, gamma_model):
+    """Assemble matrix A of equation (5.9) - built once for all targets."""
+    n = len(xc)
+    A = np.zeros((n + 1, n + 1))
+    A[:n, :n] = gamma_model(cdist(np.c_[xc, yc], np.c_[xc, yc]))
+    A[:n, n] = 1.0          # constraint column
+    A[n, :n] = 1.0          # constraint row
+    A[n, n]  = 0.0
+    return A
+
+def ok_estimate(x0, y0, xc, yc, zc, Ainv, gamma_model):
+    """Estimate and kriging variance at one target point."""
+    n = len(zc)
+    d0 = np.sqrt((xc - x0)**2 + (yc - y0)**2)
+    b = np.empty(n + 1)
+    b[:n] = gamma_model(d0)        # sample-to-target variogram
+    b[n]  = 1.0                    # constraint
+    w = Ainv @ b                   # lambda_1..n and mu
+    estimate = float(np.dot(w[:n], zc))                 # equation (5.1)
+    variance = float(np.dot(w[:n], b[:n]) + w[n])       # equation (5.8)
+    return max(estimate, 0.0), max(variance, 0.0)
+</code></pre></div>
+
+<h2>5.6 The properties of kriging</h2>
+<p>Six properties follow from the derivation, and an estimator is only
+trustworthy in the hands of someone who knows them.</p>
+
+<p><b>Kriging is an exact interpolator.</b> Estimate at a sampled
+location, with no nugget, and kriging returns that sample's grade exactly
+and a kriging variance of zero. It honours the data. Add a nugget,
+however, and that exactness is broken: kriging then <em>smooths
+through</em> the data points, because the nugget tells it the data
+themselves carry random noise. The interpolation tool below lets you
+watch this happen as you lift the nugget.</p>
+
+<p><b>Kriging smooths.</b> Kriged estimates always have <em>less</em>
+variance than the true grades: \(\operatorname{Var}[Z^*]<\operatorname{Var}[Z]\).
+High grades are estimated too low, low grades too high, and the histogram
+of a block model is narrower than reality.</p>
+
+<div class="callout pitfall">
+  <div class="ttl">Smoothing and conditional bias</div>
+  <p>The smoothing property has teeth at the mine scale. Because a kriged
+  model compresses the grade distribution towards the mean, if you select
+  ore from the kriged model at a high cut-off you will tend to find the
+  real grade is lower than the model promised &mdash; this is
+  <em>conditional bias</em>. It is why heavily smoothed estimates
+  mis-state the tonnes and grade above cut-off, and why
+  neighbourhood design (below) and, ultimately, conditional simulation
+  (Module 6) exist. Kriging is the best <em>estimator</em>; it is
+  deliberately not a <em>simulator</em> of reality's true variability.</p>
+</div>
+
+<p><b>Kriging declusters automatically.</b> The sample-to-sample
+variogram matrix \(\Gamma_{ij}\) in (5.9) means redundant, clustered
+samples share weight rather than each claiming a full vote &mdash; the
+behaviour we hoped for when reading equation (5.5).</p>
+
+<p><b>The screen effect and negative weights.</b> A sample lying directly
+between the target and a more distant sample <em>screens</em> the distant
+one, cutting its weight &mdash; sometimes below zero. Negative weights are
+useful (they let kriging estimate slightly outside the local data range)
+but they can also produce nonsensical negatives for a grade, so they are
+often constrained or reset.</p>
+
+<p><b>Kriging uses the variogram, hence the geology.</b> Unlike IDW, the
+weights depend on the nugget, sill, range and anisotropy of Module 4
+&mdash; the estimator is informed by the measured continuity of the
+orebody itself.</p>
+
+<p><b>The kriging neighbourhood is a design choice.</b> Equation (5.9)
+need not use every sample. In practice a search neighbourhood is defined
+&mdash; a search radius near the variogram range, a minimum and maximum
+sample count, often an octant or quadrant search to force spatial
+balance. Choosing it well is <b>Quantitative Kriging Neighbourhood
+Analysis</b> (QKNA): test candidate neighbourhoods and choose the one
+that keeps the estimate conditionally unbiased without over-smoothing.</p>
+
+<h2>5.7 Point kriging and block kriging</h2>
+<p>A mine does not extract points; it extracts <b>blocks</b> &mdash;
+selective mining units sized to the equipment. The quantity that matters
+is the <em>average</em> grade of a block \(V\), not the grade at its
+centre.</p>
+
+<p>Kriging handles this directly. <b>Block kriging</b> replaces the
+sample-to-target variogram \(\gamma(\mathbf{x}_i,\mathbf{x}_0)\) in the
+right-hand side of (5.7) with the average variogram between sample
+\(i\) and every point sweeping through the block:</p>
+
+<div class="eq">
+  <span class="eqnum">(5.10)</span>
+  \[ \bar{\gamma}(\mathbf{x}_i,V)=\frac{1}{|V|}\int_{V}
+     \gamma(\mathbf{x}_i,\mathbf{u})\,d\mathbf{u}
+     \;\approx\;\frac{1}{N}\sum_{k=1}^{N}
+     \gamma(\mathbf{x}_i,\mathbf{u}_k) \]
+  <div class="eqlabel">In practice the integral is a discrete average
+  over a fine grid of points u-k filling the block.</div>
+</div>
+
+<p>Because a block average is intrinsically less variable than a point
+(the support effect of Module 3), block kriging yields a smaller kriging
+variance than point kriging. Block kriging is the standard for resource
+block models; point kriging is mostly a teaching and cross-validation
+tool.</p>
+
+<h2>5.8 The kriging family</h2>
+<div class="tablewrap">
+<table class="data">
+  <tr><th>Variant</th><th>When to use</th></tr>
+  <tr><td><b>Ordinary kriging</b></td><td>The default. Mean constant but
+    unknown within the neighbourhood. The Toro estimate uses it.</td></tr>
+  <tr><td><b>Simple kriging</b></td><td>Mean known and constant. No
+    constraint, so weights need not sum to one. Mainly a building block
+    inside simulation.</td></tr>
+  <tr><td><b>Lognormal kriging</b></td><td>Strongly lognormal grades,
+    kriged in log space with a rigorous back-transform &mdash; never a
+    naive exponential (Module 3).</td></tr>
+  <tr><td><b>Indicator kriging</b></td><td>Non-parametric. Krige the
+    probability of exceeding a series of thresholds to rebuild the whole
+    local grade distribution &mdash; strong for highly skewed,
+    outlier-prone data.</td></tr>
+  <tr><td><b>Universal kriging</b></td><td>A systematic spatial trend in
+    the mean; the trend is modelled and removed.</td></tr>
+  <tr><td><b>Co-kriging</b></td><td>A well-correlated, cheaper secondary
+    variable assists the primary. For Toro, Nb&#8322;O&#8325; correlates
+    with SnO&#8322; at r = 0.76 &mdash; a genuine co-kriging
+    candidate.</td></tr>
+</table>
+</div>
+
+<h2>5.9 Validating the estimate</h2>
+<p>An estimate is not finished when the kriging runs. It must be shown to
+be sound. Four checks, used together, do this.</p>
+
+<p><b>Cross-validation</b> is the central quantitative test. Remove one
+sample, krige its location from the remaining \(n-1\), and compare the
+estimate with the value actually withheld. Repeat for every sample. Three
+numbers summarise the result: the <em>mean error</em> (should be near
+zero &mdash; tests bias), the <em>root-mean-square error</em> (smaller is
+better &mdash; tests precision), and the <em>slope of the regression</em>
+of true grade on estimate (should be near one &mdash; tests conditional
+bias).</p>
+
+<p><b>Swath plots</b> divide the deposit into slices and compare, slice
+by slice, the mean of the estimates against the mean of the nearby data.
+They expose smoothing and any local bias the global statistics would
+hide. <b>Visual validation</b> posts the drill data on the estimated
+model in section and plan: the model must look geologically right next to
+the data that made it. And a <b>global statistical check</b> confirms the
+kriged mean reproduces the declustered data mean of Module 3.</p>
+
+<figure>
+  <img src="assets/figures/fig_swath.png" alt="Toro swath plot">
+  <figcaption><b>Figure 5.2</b> &mdash; Swath plot, north-south. The
+  kriged means (bronze) track the data means (navy) band by band but with
+  a visibly compressed amplitude &mdash; the smoothing property of
+  section 5.6, made visible. Nearest-neighbour (grey) is the least
+  smoothed and the noisiest.</figcaption>
+</figure>
+
+<h2>5.10 Worked example: kriging the Toro data</h2>
+<p>The whole module now runs on the Toro composited pits, using the
+spherical variogram fitted in Module 4 (nugget 1.88, sill 3.44, range
+1052 m). The kriging matrix is built once; the system is solved for every
+node of a 60 m grid.</p>
+
+<figure>
+  <img src="assets/figures/fig_kriging.png" alt="Toro ordinary kriging">
+  <figcaption><b>Figure 5.3</b> &mdash; Ordinary kriging of Toro
+  SnO&#8322;. <b>Left:</b> the estimate &mdash; a smoothed grade surface
+  with a clear higher-grade core through the Bishiwai-Yadabongo pits.
+  <b>Right:</b> the kriging standard error from equation (5.8). It is low
+  tight against the pits and rises steeply into every gap &mdash; a
+  direct, honest map of where the data run out.</figcaption>
+</figure>
+
+<p>The right-hand panel is the point of kriging. No classical estimator
+can draw it. It says, in quantified form, exactly where the estimate is
+trustworthy and where it is little better than a guess &mdash; and that
+map is precisely what drives the resource classification of Module 6.</p>
+
+<p>Cross-validation delivers the honest verdict on the estimate:</p>
+
+<div class="callout toro">
+  <div class="ttl">The Toro cross-validation result</div>
+  <div class="tablewrap" style="margin-top:6px">
+  <table class="data">
+    <tr><th>Metric</th><th>Value</th><th>Reading</th></tr>
+    <tr><td>Mean error</td><td class="num">+0.02% SnO&#8322;</td>
+      <td>essentially unbiased &mdash; good</td></tr>
+    <tr><td>RMSE</td><td class="num">1.80% SnO&#8322;</td>
+      <td>large against a 2.3% mean grade</td></tr>
+    <tr><td>Estimate-actual correlation</td><td class="num">0.24</td>
+      <td>weak predictive power</td></tr>
+  </table>
+  </div>
+  <p>This result must be read without flinching. The kriging is
+  <em>unbiased</em> &mdash; on average it gets the grade right, which is
+  requirement 1 satisfied. But its <em>precision is poor</em>: a
+  correlation of 0.24 means the estimate barely out-predicts simply
+  assigning the global mean everywhere. That is not a failure of the
+  kriging mathematics &mdash; the BLUE derivation guarantees these are
+  the best linear weights obtainable. It is a failure of <em>data</em>.
+  With a relative nugget of 0.55 and only 26 widely spread pits, there is
+  too little spatial signal to estimate from. The mathematics has done
+  its job; it has also told you the truth.</p>
+</div>
+
+<div class="callout key">
+  <div class="ttl">Why this is the most important result in the course</div>
+  <p>A weak cross-validation is not a setback to be hidden &mdash; it is
+  the estimate doing exactly what Module 1 demanded: quantifying
+  confidence honestly. It is the mathematical proof that Toro is an
+  Exploration Target and not yet a Mineral Resource. And it is
+  <em>prescriptive</em>: precision will improve only by attacking the
+  nugget (better sampling protocols, Module 2) and adding data density
+  (the drilling campaign). Kriging has not just estimated the deposit; it
+  has costed and justified the next exploration budget.</p>
+</div>
+
+<div class="widget" id="interp-widget"></div>
+
+<p>The tool above is the module in miniature. Sweep the IDW power and
+watch the estimate move from the flat mean towards the jagged
+nearest-neighbour step function. Then lift the kriging nugget from zero
+and watch the kriging curve detach from the data points &mdash; the
+exact-interpolator property of section 5.6 breaking, in real time, as
+noise is admitted into the model.</p>
+
+<div class="quiz">
+  <div class="q">Check your understanding: Toro cross-validation returns
+  a mean error near zero but an estimate-actual correlation of only 0.24.
+  What is the correct interpretation?</div>
+  <div class="opt" data-correct="0">The kriging code has a bug; the
+  correlation should be near 1.</div>
+  <div class="opt" data-correct="0">The variogram model must be refitted
+  until the correlation improves.</div>
+  <div class="opt" data-correct="1">The estimate is unbiased but
+  imprecise; the data are too sparse and too noisy to estimate well, which
+  confirms Exploration Target status and justifies more drilling.</div>
+  <div class="opt" data-correct="0">The deposit is barren and should be
+  relinquished.</div>
+  <div class="explain">A near-zero mean error means unbiasedness
+  &mdash; requirement 1 &mdash; is met. A low correlation means poor
+  precision, which with a relative nugget of 0.55 and only 26 pits is a
+  data limitation, not a code or model error. Kriging is provably the
+  best linear unbiased estimator; it cannot manufacture signal that the
+  data do not contain. The honest response is to report the limitation,
+  keep the project as an Exploration Target, and drill &mdash; not to
+  tune the variogram until the number looks better, which would be
+  self-deception.</div>
+</div>
+
+<div class="pagenav">
+  <a href="module-4.html"><div class="dir">&larr; Previous</div>
+    <div class="ttl">Module 4 &middot; Variography</div></a>
+  <a class="next" href="module-6.html"><div class="dir">Next &rarr;</div>
+    <div class="ttl">Module 6 &middot; Reporting &amp; Capstone</div></a>
+</div>
+
+</div>
+</main>
+</div>
+<script src="assets/course.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>
